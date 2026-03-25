@@ -7,4 +7,5 @@ void printTestResult(const std::string& testName, bool condition) {
     } else {
         std::cerr << "[\033[31mKO\033[0m] " << testName << std::endl;
     }
+    assert(condition);
 }

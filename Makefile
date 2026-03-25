@@ -8,20 +8,26 @@ CPPFLAGS    := -Wall -Wextra -Werror -std=c++98
 DEPFLAGS    := -MMD -MP 
 INCLUDES    := -I includes -I test
 
-### PATHS & FILES ##############################################################
+### FILES ######################################################################
 
 PATH_OBJS   := objs/
 
-SRCS        := srcs/main.cpp srcs/Client.cpp srcs/Channel.cpp
-OBJS        := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(SRCS))
-DEPS        := $(OBJS:.o=.d)
+SRCS        := srcs/main.cpp \
+               srcs/Client.cpp \
+               srcs/Channel.cpp
 
-TEST_SRCS   := $(wildcard test/*.cpp)
-TEST_SERVER := $(filter-out srcs/main.cpp, $(SRCS))
+TEST_SRCS   := test/main_test.cpp \
+               test/test_client.cpp \
+               test/test_channel.cpp \
+               test/utils_tests.cpp
 
-TEST_OBJS   := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(TEST_SRCS))
-TEST_SRV_OBJS := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(TEST_SERVER))
-TEST_DEPS   := $(TEST_OBJS:.o=.d)
+### OBJECTS & DEPS #############################################################
+
+OBJS          := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(SRCS))
+TEST_SRV_OBJS := $(filter-out $(PATH_OBJS)srcs/main.o, $(OBJS))
+TEST_OBJS     := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(TEST_SRCS))
+
+DEPS          := $(OBJS:.o=.d) $(TEST_OBJS:.o=.d)
 
 ### RULES ######################################################################
 
@@ -46,6 +52,6 @@ fclean: clean
 
 re: fclean all
 
--include $(DEPS) $(TEST_DEPS)
+-include $(DEPS)
 
 .PHONY: all test clean fclean re

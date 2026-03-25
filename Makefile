@@ -6,6 +6,7 @@ PATH_SRCS := srcs
 
 SRCS += Client.cpp
 SRCS += Channel.cpp
+SRCS += main.cpp
 
 vpath %.cpp $(PATH_SRCS)
 

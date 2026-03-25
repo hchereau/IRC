@@ -14,6 +14,7 @@ enum RegistrationState {
 
 class Client {
 	public:
+	//default
 		Client(int fd, const std::string& hostname);
 		Client(Client const & other);
 		Client& operator=(Client const & other);

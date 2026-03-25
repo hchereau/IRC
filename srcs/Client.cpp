@@ -1,5 +1,6 @@
 #include "Client.hpp"
 
+//default 
 Client::Client(int fd, const std::string& hostname) 
     : _clientFd(fd), _hostname(hostname), _state(UNREGISTERED) {
 }
@@ -89,7 +90,7 @@ std::string Client::extractMessage() {
 
     if (pos != std::string::npos) {
         message = _readBuffer.substr(0, pos);
-        _readBuffer.erase(0, pos + 2); // rerase \r\n
+        _readBuffer.erase(0, pos + 2); // erase \r\n
     }
     return message;
 }

@@ -5,11 +5,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  unit-testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Compile
-        run: make
-      - name: Test
-        run: ./irc
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile Tests
+        run: make test
+
+      - name: Execute Unit Tests
+        run: ./irc_tests

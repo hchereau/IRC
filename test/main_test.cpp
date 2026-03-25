@@ -8,6 +8,7 @@ int main() {
 
     runClientTests();
     runChannelTests();
+    runValidationTest();
 
     std::cout << "\n=== All tests completed ===" << std::endl;
     return 0;

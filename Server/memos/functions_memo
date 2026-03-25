@@ -134,3 +134,12 @@ fds[1].events = POLLIN
 htons :
 extern uint16_t htons (uint16_t __hostshort)
      __THROW __attribute__ ((__const__));
+
+pollfd struct : 
+/* Data structure describing a polling request.  */
+struct pollfd
+  {
+    int fd;			/* File descriptor to poll.  */
+    short int events;		/* Types of events poller cares about.  */
+    short int revents;		/* Types of events that actually occurred.  */
+  };

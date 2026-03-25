@@ -1,12 +1,12 @@
 #include "Server.hpp"
 #include "ServerConfig.hpp"
 
-Server::Server() : _port(-1), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
-{
-	// others are set to fail flag, port is from 0 so just -1
-}
+// Server::Server() : _port(-1), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
+// {
+// 	// others are set to fail flag, port is from 0 so just -1
+// }
 
-Server::Server(int port) : _port(port), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
+Server::Server(int port, std::string password) : _port(port), _password(password), _fdSocket(-1), _binded(-1), _listening(-1)
 {
 
 }
@@ -77,8 +77,9 @@ void Server::runServer()
 	std::memset(&clientAddr, 0, sizeof(clientAddr));
 	ServerConfig config;
 	// 클라 접속 처리 (accept)
-	while (42)
+	while (!g_sig) // make signal enums on somewhere ?
 	{
+		poll(fds, nfds, 1000);
 		// 1) check the Server event from the first idx of poll list
 		// 2) accept to get the new clients
 		socklen_t client_addr_size = sizeof(clientAddr); // not hardcoded, how i get it?

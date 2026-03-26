@@ -9,11 +9,11 @@ int main(int argc, char **argv)
 		std::cout << "wrong usage, add arguments" << std::endl;
 		return (0);
 	}
-	Message msg = p.parseLine(argv[2]);
+	Message msg = p.parseLine(argv[1]);
 
 	if (!msg.prefix.empty())
 		std::cout << "Prefix: " << msg.prefix << std::endl;
-	std::cout << "Cmd: '" << msg.cmd << std::endl;
+	std::cout << "Cmd: " << msg.cmd << std::endl;
 	//if (!msg.params.empty())
 	//{
 	//	for (size_t i = 0; i < msg.params.size(); ++i)

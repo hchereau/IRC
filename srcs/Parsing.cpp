@@ -37,9 +37,9 @@ Message	Parsing::parseLine(const std::string& line)
 	}
 	std::string	cpy = line;
 
-	if (!cpy.empty())
+	if (cpy.empty())
 	{
-		std::cerr << "Pb with cpy" << std::endl;
+		std::cerr << "Pb with cpy" << std::endl; // juste un test, a supprimer à la fin
 		return(msg);	
 	}
 	if (cpy[0] == ':')
@@ -54,12 +54,8 @@ Message	Parsing::parseLine(const std::string& line)
 std::string Parsing::extractPrefix(std::string& line)
 {
 	std::string		prefix;
-	size_t start = 0;
 
-	while (start < line.size() && line[start] == ' ')
-		start++;
-
-	size_t spacePos	= line.find(' ',);
+	size_t spacePos	= line.find(' ');
 
 	if (spacePos == std::string::npos)
 		return "";

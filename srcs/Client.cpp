@@ -2,7 +2,7 @@
 
 //default 
 Client::Client(int fd, const std::string& hostname) 
-    : _clientFd(fd), _hostname(hostname), _state(UNREGISTERED) {
+    : _clientFd(fd), _hostname(hostname), _state(UNREGISTERED), _toDisconnect(false) {
 }
 
 Client::Client(Client const & other) {

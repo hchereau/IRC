@@ -14,7 +14,9 @@ PATH_OBJS   := objs/
 
 SRCS        := srcs/Client.cpp \
                srcs/Channel.cpp \
-			   srcs/CommandValidator.cpp
+			   srcs/CommandValidator.cpp \
+			   srcs/Replies.cpp \
+			   srcs/Executor.cpp
 
 TEST_SRCS   := test/main_test.cpp \
                test/test_client.cpp \

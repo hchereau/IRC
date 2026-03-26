@@ -42,7 +42,7 @@ Message	Parsing::parseLine(const std::string& line)
 		std::cerr << "Pb with cpy" << std::endl; // juste un test, a supprimer à la fin
 		return(msg);	
 	}
-	if (cpy[0] == ':')
+	if (!cpy.empty() && cpy[0] == ':')
 		msg.prefix = extractPrefix(cpy);
 	if (!cpy.empty())
 		msg.cmd = extractCmd(cpy);
@@ -64,6 +64,7 @@ std::string Parsing::extractPrefix(std::string& line)
 	return (prefix);
 }
 
+
 std::string Parsing::extractCmd(std::string& line)
 {
 	std::string	cmd;
@@ -72,7 +73,7 @@ std::string Parsing::extractCmd(std::string& line)
 	while (start < line.size() && line[start] == ' ')
 		start++;
 
-	size_t spacePos	= line.find(' ');
+	size_t spacePos	= line.find(' ', start);
 
 	if (spacePos == std::string::npos)
 	{
@@ -88,7 +89,6 @@ std::string Parsing::extractCmd(std::string& line)
 		cmd[i] = std::toupper(cmd[i]);
 	return (cmd);
 }
-
 
 /*
 

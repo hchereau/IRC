@@ -59,7 +59,7 @@ std::string Parsing::extractPrefix(std::string& line)
 	while (start < line.size() && line[start] == ' ')
 		start++;
 
-	size_t spacePos	= line.find(' ', start);
+	size_t spacePos	= line.find(' ',);
 
 	if (spacePos == std::string::npos)
 		return "";
@@ -86,12 +86,10 @@ std::string Parsing::extractCmd(std::string& line)
 {
     std::string cmd;
 
-    // Ignorer les espaces au début
     size_t start = 0;
     while (start < line.size() && line[start] == ' ')
         start++;
 
-    // Trouver fin de commande
     size_t spacePos = line.find(' ', start);
 
     if (spacePos == std::string::npos)
@@ -114,5 +112,10 @@ std::string Parsing::extractCmd(std::string& line)
 
 
 /*
+
+std::string Parsing::extractTrailing(std::string& line)
+{
+	if ()
+}
 
 */

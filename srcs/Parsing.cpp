@@ -54,7 +54,12 @@ Message	Parsing::parseLine(const std::string& line)
 std::string Parsing::extractPrefix(std::string& line)
 {
 	std::string		prefix;
-	size_t spacePos	= line.find(' ');
+	size_t start = 0;
+
+	while (start < line.size() && line[start] == ' ')
+		start++;
+
+	size_t spacePos	= line.find(' ', start);
 
 	if (spacePos == std::string::npos)
 		return "";
@@ -69,36 +74,45 @@ std::string Parsing::extractCmd(std::string& line)
 	size_t spacePos	= line.find(' ');
 
 	if (spacePos == std::string::npos)
-		return "";
-	cmd = line.substr(1, spacePos - 1);
+		cmd = line.substr(0, std::string::npos - 1);
+	cmd = line.substr(0, spacePos - 1);
 	line.erase(0, spacePos + 1);
 	for (size_t i = 0; i < cmd.size(); i++)
 		cmd[i] = std::toupper(cmd[i]);
 	return (cmd);
 }
 
-/*
-
-std::string Parsing::extractTrailing(std::string& line)
+std::string Parsing::extractCmd(std::string& line)
 {
-	if ()
+    std::string cmd;
+
+    // Ignorer les espaces au début
+    size_t start = 0;
+    while (start < line.size() && line[start] == ' ')
+        start++;
+
+    // Trouver fin de commande
+    size_t spacePos = line.find(' ', start);
+
+    if (spacePos == std::string::npos)
+    {
+        cmd = line.substr(start);
+        line.clear();
+    }
+    else
+    {
+        cmd = line.substr(start, spacePos - start);
+        line.erase(0, spacePos + 1);
+    }
+
+    // Mettre en majuscule
+    for (size_t i = 0; i < cmd.size(); i++)
+        cmd[i] = std::toupper(cmd[i]);
+
+    return cmd;
 }
 
-1. copy line → workingLine
 
-2. prefix = extractPrefix()
-
-3. trailing = extractTrailing()   ⚠️ IMPORTANT
-
-4. cmd = extractCmd()
-
-5. params = extractParams()
-
-Message Parser::parseLine(string line) {
-  // 1. if line[0]==':' → extract prefix (jusqu'espace)
-  // 2. extract cmd (jusqu'espace) → toupper()
-  // 3. boucle: params jusqu'à ':' → trailing
-  // 4. check len<512
-}
+/*
 
 */

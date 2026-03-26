@@ -98,6 +98,7 @@ void Executor::execUser(Client* client, const Message& msg) {
     }
 
     client->setUsername(msg.params[0]);
+    // C'est commun de ne pas utiliser 1 et 2 dnas les serveurs pro
     client->setRealname(msg.params[3]);
 
     client->setState(USER_SET);

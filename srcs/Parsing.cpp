@@ -71,43 +71,26 @@ std::string Parsing::extractPrefix(std::string& line)
 std::string Parsing::extractCmd(std::string& line)
 {
 	std::string	cmd;
+	size_t start = 0;
+
+	while (start < line.size() && line[start] == ' ')
+		start++;
+
 	size_t spacePos	= line.find(' ');
 
 	if (spacePos == std::string::npos)
-		cmd = line.substr(0, std::string::npos - 1);
-	cmd = line.substr(0, spacePos - 1);
-	line.erase(0, spacePos + 1);
+	{
+		cmd = line.substr(start);
+		line.clear();
+	}
+	else
+	{
+		cmd = line.substr(0, spacePos - start);
+		line.erase(0, spacePos + 1);
+	}
 	for (size_t i = 0; i < cmd.size(); i++)
 		cmd[i] = std::toupper(cmd[i]);
 	return (cmd);
-}
-
-std::string Parsing::extractCmd(std::string& line)
-{
-    std::string cmd;
-
-    size_t start = 0;
-    while (start < line.size() && line[start] == ' ')
-        start++;
-
-    size_t spacePos = line.find(' ', start);
-
-    if (spacePos == std::string::npos)
-    {
-        cmd = line.substr(start);
-        line.clear();
-    }
-    else
-    {
-        cmd = line.substr(start, spacePos - start);
-        line.erase(0, spacePos + 1);
-    }
-
-    // Mettre en majuscule
-    for (size_t i = 0; i < cmd.size(); i++)
-        cmd[i] = std::toupper(cmd[i]);
-
-    return cmd;
 }
 
 

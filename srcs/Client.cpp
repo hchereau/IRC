@@ -67,6 +67,10 @@ void Client::setState(RegistrationState state) {
     _state = state;
 }
 
+void 	Client::setToDisconnect(bool status) {
+    _toDisconnect = status;
+}
+
 // buffer management
 void Client::appendToReadBuffer(const std::string& data) {
     _readBuffer += data;

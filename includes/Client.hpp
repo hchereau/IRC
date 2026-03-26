@@ -34,7 +34,7 @@ class Client {
 		void	setUsername(const std::string& user);
 		void	setRealname(const std::string& real);
 		void	setState(RegistrationState state);
-		void setToDisconnect(bool status);
+		void 	setToDisconnect(bool status);
 
 	//buffer management
 		void	appendToReadBuffer(const std::string& data);

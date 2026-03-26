@@ -37,13 +37,13 @@ class Server {
 	int	_binded; // hmm
 	int _listening; // hmm
 
-	std::map<int, Client> _clients; // _clients[fd] or iterator ..
+	std::map<int, Client*> _clients; // _clients[fd] or iterator ..
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
 
 	void timeOut(void);
 	void updPoll(void); // _pollFds
-	void updClients(void);
+	void updClients(void); // _clients
 	void recvServ(int fd);
 	void sendServ(int fd);
 	void broadCast(const std::string& msg, int notThisFd);
@@ -58,9 +58,10 @@ class Server {
 	Server& operator=(const Server &other);
 	~Server();
 
-	void confServer();
+	void confServer(void);
 	std::map<int, Client>getClients(void) const;
-	void runServer();
+	void runServer(void);
+	void setPolling(int fd, int flag);
 
 };
 

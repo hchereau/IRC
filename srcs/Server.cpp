@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Client.hpp"
 
 // Server::Server() : _port(-1), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
 // {
@@ -31,9 +32,27 @@ Server::~Server()
 
 }
 
+void Server::timeOut(void)
+{
+	// i donno how to deal with timeout
+}
+
 void Server::updPoll(void)
 {
-	
+	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
+	std::memset(&clientAddr, 0, sizeof(clientAddr));
+	socklen_t client_addr_size = sizeof(clientAddr);
+
+	int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
+	pollfd add_to_polling;
+	if (temp_clientFd == FAIL)
+		sysError(ERR_ACCEPT);
+	add_to_polling.fd = temp_clientFd;
+	add_to_polling.events = POLLIN;
+	add_to_polling.revents = 0;
+	Client* client = new Client(temp_clientFd); // leak management needed
+	_clients[temp_clientFd] = client;
+	_polling.push_back(add_to_polling);
 }
 
 void Server::updClients(void)
@@ -112,9 +131,6 @@ void Server::confServer()
 
 void Server::runServer()
 {
-	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
-	std::memset(&clientAddr, 0, sizeof(clientAddr));
-
 	// while (!g_sig) // define signal (enums, global variable somewhere)
 	while (1)
 	{
@@ -125,30 +141,39 @@ void Server::runServer()
 			timeOut();
 		if  (serverEvent == 1)
 		{
-			if (_polling[0].revents & POLLIN) // revents is bitmask
-			{
-				socklen_t client_addr_size = sizeof(clientAddr);
-				int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
-				client->setAdd(temp_clientFd);
-				if (temp_clientFd == FAIL)
-					sysError(ERR_ACCEPT);
-
-			}
-
+			if (_polling[0].revents & POLLIN) // revents is bitmask so &
+				updPoll();
 		}
-		// 1) check the Server event from the first idx of poll list	
-		// 2) accept to get the new clients
-		// accept 는 server fd 에 이벤트가 있을 때만 하기
-		// 3) put the new clients on the poll list
-
-		while (poll list till the end)
+		int i = 0;
+		while (std::vector<int>::iterator it = _polling.begin() + 1; it != _polling.end(); ++it)
 		{
 			// read and do the action as needed use enum or signal
 			// 1) recv
+			if (_polling[i].revents & POLLIN)
+			{
+
+			}
 			// 2) send
+			else if (_polling[i].revents & POLLOUT)
+			{
+
+			}
 			// 3) disconnected client : update the "delete" list
+			else if (_polling[i].revents & POLLHUP)
+			{
+				_todelFds.insert(_polling[i].fd);
+			}
 			// (getting EXECUTION result based(it should contain Client info) on the Client and ***treat it***)
-		}
+		}	i++;
 		// look at the "delete" list and delete
 	}
+	// signal occured
+	cleanDown();
+}
+
+void Server::setPolling(int fd, int flag)
+{
+	// based on one fd, set to POLLOUT or disconnect 
+	// caller to put each fd of the client if needed
+	// flag is for the POLLOUT or disconnect setup 
 }

@@ -12,6 +12,8 @@
 #include <set>
 #include <sys/poll.h> // struct defined
 #include <algorithm> // fill
+#include <cerrno> // syscall error part
+#include <cstring> // syscall error part
 
 typedef enum s_syserror
 {
@@ -19,6 +21,8 @@ typedef enum s_syserror
 	ERR_BIND,
 	ERR_LISTEN,
 	ERR_ACCEPT,
+	ERR_POLL,
+	ERR_count,
 	FAIL = -1
 } t_syserror;
 
@@ -37,7 +41,7 @@ class Server {
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
 
-	// getter
+	void timeOut(void);
 	void updPoll(void); // _pollFds
 	void updClients(void);
 	void recvServ(int fd);

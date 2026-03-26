@@ -70,22 +70,8 @@ void Server::disClient(int fd)
 
 void Server::sysError(int sys_enum)
 {
-	if (sys_enum == ERR_SOCKET)
-	{
-
-	}
-	else if (sys_enum == ERR_BIND)
-	{
-
-	}
-	else if (sys_enum == ERR_LISTEN)
-	{
-
-	}
-	else if (sys_enum == ERR_ACCEPT)
-	{
-
-	}
+	std::string errors[ERR_count] = {"socket", "bind", "listen", "accept", "poll"};
+	std::cerr << "Error_systemcall: " << errors[sys_enum] << strerror(errno) << std::endl;
 	exit(1);
 }
 
@@ -132,25 +118,28 @@ void Server::runServer()
 	// while (!g_sig) // define signal (enums, global variable somewhere)
 	while (1)
 	{
-		int serverEvent = poll(_polling.fds, 1, 1000);
+		int serverEvent = poll(_polling.data(), 1, 1000);
+		if (serverEvent < 0)
+			sysError(ERR_POLL);
+		if (serverEvent == 0)
+			timeOut();
 		if  (serverEvent == 1)
 		{
-			if (_polling.revents && POLLIN)
+			if (_polling[0].revents & POLLIN) // revents is bitmask
 			{
+				socklen_t client_addr_size = sizeof(clientAddr);
+				int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
+				client->setAdd(temp_clientFd);
+				if (temp_clientFd == FAIL)
+					sysError(ERR_ACCEPT);
 
 			}
 
 		}
-		// 1) check the Server event from the first idx of poll list
-	
+		// 1) check the Server event from the first idx of poll list	
 		// 2) accept to get the new clients
-		socklen_t client_addr_size = sizeof(clientAddr);
 		// accept 는 server fd 에 이벤트가 있을 때만 하기
-		int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
 		// 3) put the new clients on the poll list
-		client->setAdd(temp_clientFd);
-		if (temp_clientFd == FAIL)
-			sysError(ERR_ACCEPT);
 
 		while (poll list till the end)
 		{

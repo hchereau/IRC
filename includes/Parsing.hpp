@@ -1,0 +1,36 @@
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
+
+# include <vector>
+# include <iostream>
+# include <cstring>
+# include <exception>
+# include <cctype>
+
+// struc ou direct l'implementer dans la classe parsing ? 
+struct Message {
+    std::string prefix; // not always, if ":" present
+    std::string cmd;
+    std::vector<std::string> params;
+    std::string trailing; // message, starts with ":"
+};
+
+class Parsing
+{
+private:
+	std::string extractPrefix(std::string& line);
+	std::string extractCmd(std::string& line);
+	//extractParams();
+	//std::string extractTrailing(std::string& line);
+	
+public:
+	Parsing();
+	Parsing(Parsing const &);
+	~Parsing();
+	Parsing	&operator=(Parsing const &);
+
+	Message parseLine(const std::string& line);
+
+};
+
+#endif

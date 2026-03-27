@@ -183,12 +183,12 @@ void Server::runServer()
 			// 1) recv
 			if (_polling[i].revents & POLLIN)
 			{
-
+				recvServ(_polling[i].fd);
 			}
 			// 2) send
 			else if (_polling[i].revents & POLLOUT)
 			{
-
+				sendServ(_polling[i].fd);
 			}
 			// 3) disconnected client : update the "delete" list
 			else if (_polling[i].revents & POLLHUP)
@@ -202,12 +202,13 @@ void Server::runServer()
 		// look at the "delete" list and delete
 		delClients();
 	}
-	// signal occured
+	// signal occured or quit kind of ?
 	cleanDown();
 }
 
 void Server::setPolling(int fd, int flag)
 {
+	// caller to put flag or i can divide with more evident name for each case
 	int i = 1;
 	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
 	while (it != _polling.end())

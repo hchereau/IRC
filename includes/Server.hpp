@@ -14,6 +14,9 @@
 #include <algorithm> // fill
 #include <cerrno> // syscall error part
 #include <cstring> // syscall error part
+#include <arpa/inet.h> // inet_ntoa
+#include <fcntl.h>
+#include <unistd.h>
 
 typedef enum s_syserror
 {
@@ -25,6 +28,12 @@ typedef enum s_syserror
 	ERR_count,
 	FAIL = -1
 } t_syserror;
+
+typedef enum s_eventflag
+{
+	set_POLLOUT,
+	set_POLLHUP
+} t_eventflag;
 
 class Server {
 
@@ -42,12 +51,11 @@ class Server {
 	std::set<int> _todelFds;
 
 	void timeOut(void);
-	void updPoll(void); // _pollFds
-	void updClients(void); // _clients
+	void updPoll(void); // _pollFds and _clients
 	void recvServ(int fd);
 	void sendServ(int fd);
 	void broadCast(const std::string& msg, int notThisFd);
-	void disClient(int fd); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
+	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);
 	void cleanDown(); // when sig(global variable) catched while run server loop etc
 
@@ -59,7 +67,9 @@ class Server {
 	~Server();
 
 	void confServer(void);
-	std::map<int, Client>getClients(void) const;
+	std::map<int, Client*> getClients(void) const;
+	const std::map<int, Client*>& congetC(void) const;
+
 	void runServer(void);
 	void setPolling(int fd, int flag);
 

@@ -44,37 +44,44 @@ void Server::updPoll(void)
 	socklen_t client_addr_size = sizeof(clientAddr);
 
 	int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
-	pollfd add_to_polling;
 	if (temp_clientFd == FAIL)
+	{	
 		sysError(ERR_ACCEPT);
+		return ;
+	}
+	fcntl(temp_clientFd, F_SETFL, O_NONBLOCK);
+	pollfd add_to_polling;
 	add_to_polling.fd = temp_clientFd;
 	add_to_polling.events = POLLIN;
 	add_to_polling.revents = 0;
-	Client* client = new Client(temp_clientFd); // leak management needed
-	_clients[temp_clientFd] = client;
+	std::string clientHostname(inet_ntoa(clientAddr.sin_addr));
+	Client* client = new Client(temp_clientFd, clientHostname); // leak management needed
+	_clients.insert(std::make_pair(temp_clientFd, client));
 	_polling.push_back(add_to_polling);
 }
 
-void Server::updClients(void)
+std::map<int, Client*> Server::getClients(void) const
 {
-
+	return this->_clients;
 }
 
-std::map<int, Client> Server::getClients(void) const
+
+const std::map<int, Client*>& Server::congetC(void) const
 {
 	return this->_clients;
 }
 
 void Server::recvServ(int fd)
 {
-	char* buff_hard[1024]; 
-	// recv(client->getFd(), buff_hard, sizeof(buff_hard), 0); // 데이터 받기
+	char* tempBuff[1024]; 
+	// recv(검색하기, tempBuff, sizeof(tempBuff), 0); // 데이터 받기
 }
 
 void Server::sendServ(int fd)
 {
-	char* buff_hard[1024]; 
-	// send(client->getFd(), buff_hard, sizeof(buff_hard), 0); // 데이터 보내기
+	char* tempBuff[1024]; 
+	// send(검색하기, tempBuff, sizeof(tempBuff), 0); // 데이터 보내기
+
 }
 
 void Server::broadCast(const std::string& msg, int notThisFd)
@@ -82,15 +89,39 @@ void Server::broadCast(const std::string& msg, int notThisFd)
 
 }
 
-void Server::disClient(int fd)
+void Server::delClients(void)
 {
-	// close()
+	std::vector<struct pollfd>::iterator p_it = _polling.begin() + 1;
+	while (p_it != _polling.end())
+	{
+		if (_todelFds.find(p_it->fd) != _todelFds.end()) // is this fd inside of _todelFds
+			p_it = _polling.erase(p_it);
+		else
+			++p_it;
+	}
+	std::set<int>::iterator c_it = _todelFds.begin();
+	while (c_it != _todelFds.end())
+	{
+		int fd = *c_it;
+		if (_clients.find(fd) != _clients.end())
+		{
+			delete(_clients[fd]);
+			_clients.erase(fd);
+			close(fd);
+		}
+		++c_it;
+	}
+	_todelFds.clear();
 }
+
+	// close()
 
 void Server::sysError(int sys_enum)
 {
 	std::string errors[ERR_count] = {"socket", "bind", "listen", "accept", "poll"};
 	std::cerr << "Error_systemcall: " << errors[sys_enum] << strerror(errno) << std::endl;
+	if (ERR_ACCEPT)
+		return ;
 	exit(1);
 }
 
@@ -144,8 +175,9 @@ void Server::runServer()
 			if (_polling[0].revents & POLLIN) // revents is bitmask so &
 				updPoll();
 		}
-		int i = 0;
-		while (std::vector<int>::iterator it = _polling.begin() + 1; it != _polling.end(); ++it)
+		int i = 1;
+		std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+		while (it != _polling.end())
 		{
 			// read and do the action as needed use enum or signal
 			// 1) recv
@@ -164,8 +196,11 @@ void Server::runServer()
 				_todelFds.insert(_polling[i].fd);
 			}
 			// (getting EXECUTION result based(it should contain Client info) on the Client and ***treat it***)
-		}	i++;
+		}
+		++it;
+		++i;
 		// look at the "delete" list and delete
+		delClients();
 	}
 	// signal occured
 	cleanDown();
@@ -173,7 +208,16 @@ void Server::runServer()
 
 void Server::setPolling(int fd, int flag)
 {
-	// based on one fd, set to POLLOUT or disconnect 
-	// caller to put each fd of the client if needed
-	// flag is for the POLLOUT or disconnect setup 
+	int i = 1;
+	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+	while (it != _polling.end())
+	{
+		if (_polling[i].fd = fd && flag == set_POLLOUT)
+			_polling[i].events = POLLOUT;
+		else if (_polling[i].fd = fd && flag == set_POLLHUP)
+			_polling[i].events = POLLOUT;
+		return ;
+		++it;
+		++i;
+	}
 }

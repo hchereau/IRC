@@ -2,7 +2,7 @@
 #define SERVER_HPP
 
 #include "Client.hpp"
-// #include "Channel.hpp"
+#include "Channel.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
@@ -56,7 +56,9 @@ class Server {
 	void updPoll(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
-	void broadCast(const std::string& msg, int notThisFd);
+	void privateMsg(const std::string& msg);
+	void channelMsg(const std::string& msg);
+	void broadCastAll(const std::string& msg, int notThisFd);
 	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);
 	void cleanDown(); // when sig(global variable) catched while run server loop etc

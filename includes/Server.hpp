@@ -17,6 +17,8 @@
 #include <arpa/inet.h> // inet_ntoa
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h> // debug printf
+#include <csignal>
 
 typedef enum s_syserror
 {
@@ -52,8 +54,8 @@ class Server {
 
 	void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
-	void recvServ(int fd);
-	void sendServ(int fd);
+	void recvServ(int fd, int *i);
+	void sendServ(int fd, int *i);
 	void broadCast(const std::string& msg, int notThisFd);
 	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);

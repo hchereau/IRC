@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "ServerConfig.hpp"
+#include "Client.hpp"
 
 // Server::Server() : _port(-1), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
 // {
@@ -22,97 +22,256 @@ Server::Server(Server &other)
 	}
 }
 
-Server& Server::operator=(const Server &other)
-{
+// Server& Server::operator=(const Server &other)
+// {
 
-}
+// }
 
 Server::~Server()
 {
 
 }
 
+void Server::timeOut(void)
+{
+	// i donno how to deal with timeout
+}
+
+void Server::updPoll(void)
+{
+	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
+	std::memset(&clientAddr, 0, sizeof(clientAddr));
+	socklen_t client_addr_size = sizeof(clientAddr);
+
+	int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size);
+	if (temp_clientFd == FAIL)
+	{	
+		sysError(ERR_ACCEPT);
+		return ;
+	}
+	fcntl(temp_clientFd, F_SETFL, O_NONBLOCK);
+	pollfd add_to_polling;
+	add_to_polling.fd = temp_clientFd;
+	add_to_polling.events = POLLIN;
+	add_to_polling.revents = 0;
+	std::string clientHostname(inet_ntoa(clientAddr.sin_addr));
+	Client* client = new Client(temp_clientFd, clientHostname); // leak management needed
+	_clients.insert(std::make_pair(temp_clientFd, client));
+	_polling.push_back(add_to_polling);
+}
+
+std::map<int, Client*> Server::getClients(void) const
+{
+	return this->_clients;
+}
+
+
+const std::map<int, Client*>& Server::congetC(void) const
+{
+	return this->_clients;
+}
+
+void Server::recvServ(int fd, int *i)
+{
+	char* tempBuff[1024];
+	while (읽을게 남아 있는 동안..)
+	{
+		int ret = recv(fd, tempBuff, sizeof(tempBuff), 0);
+		if (ret < 0)
+		{
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			{
+				// set timeout and continue
+			}
+			else if (errno == -1)
+				_todelFds.insert(_polling[*i].fd);
+		}
+		else if (ret == 0)
+		{
+			_todelFds.insert(_polling[*i].fd);
+			// FIN or RTS from the client so socket close
+		}
+		else
+		{
+			한번에 모든 메시지를 다 받았다고 장담하지 말것
+			버퍼 사이즈만큼 꽉 차게 받았다면 다시 받아본다든지.. 
+			한번 recv에 하나의 메시지 패킷만 수신되지 않을 수 있음 아마 이건 \r\n 으로 끊으면 될듯
+			수신 버퍼 크기가 100인데 60짜리 메시지 패킷이 연달아 2개 와서 60+40으로 리턴 등
+		}
+		//this function return the size of the message on successful completion
+		// if no messages are available at the socket, the receive calls wait for a m
+	}
+
+}
+
+void Server::sendServ(int fd, int *i)
+{
+	
+	char* tempBuff[1024]; 
+	while (42)
+	{
+		int sent = send(fd, tempBuff, sizeof(tempBuff), 0);
+		if (sent < 0)
+		{
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			{
+				// set timeout and continue
+			}
+			else if (errno == -1)
+				_todelFds.insert(_polling[*i].fd);
+		}
+		else if (errno == -1)
+			_todelFds.insert(_polling[*i].fd);
+		else if (sent == 0)
+		{	
+			SIGPIPE 처리 관련, SIGPIPE signal 을 받고 프로세스가 죽어버리는 경우
+			signal(SIGPIPE, SIG_IGN); 을 프로그램 시작 직후에 넣어두면 
+			send 실행 시 연결이 끊어져 있어도 프로세스를 종료하지 않고 단순히 -1을 반환함
+			_todelFds.insert(_polling[*i].fd);
+		}
+		else
+		{
+			보내는 패킷의 길이만큼 모두다 보내는데 성공했는가
+			부족한 경우 
+				timeout 만큼 재전송 로직 구현
+				혹은 폐기 등..
+		}
+	}
+} // 그 외에 EINTR 은 인터럽트가 발생하여 send 나 recv 가 빠져나오는 경우는 뭔진 모르겠지만 처리할
+// 일인지 체크하기
+
+void Server::broadCast(const std::string& msg, int notThisFd)
+{
+	(void)msg;
+	(void)notThisFd;
+}
+
+void Server::delClients(void)
+{
+	std::vector<struct pollfd>::iterator p_it = _polling.begin() + 1;
+	while (p_it != _polling.end())
+	{
+		if (_todelFds.find(p_it->fd) != _todelFds.end()) // is this fd inside of _todelFds
+			p_it = _polling.erase(p_it);
+		else
+			++p_it;
+	}
+	std::set<int>::iterator c_it = _todelFds.begin();
+	while (c_it != _todelFds.end())
+	{
+		int fd = *c_it;
+		if (_clients.find(fd) != _clients.end())
+		{
+			delete(_clients[fd]);
+			_clients.erase(fd);
+			close(fd);
+		}
+		++c_it;
+	}
+	_todelFds.clear();
+}
+
+	// close()
+
+void Server::sysError(int sys_enum)
+{
+	std::string errors[ERR_count] = {"socket", "bind", "listen", "accept", "poll"};
+	std::cerr << "Error_systemcall: " << errors[sys_enum] << " " << strerror(errno) << std::endl;
+	if (ERR_ACCEPT)
+		return ;
+	exit(1);
+}
+
+void Server::cleanDown()
+{
+
+}
+
 void Server::confServer()
 {
-	ServerConfig config; // hardcoded one, i need to the initial parsing to get port etc
-
+	std::signal(SIGPIPE, SIG_IGN);
 	_fdSocket = socket(AF_INET, SOCK_STREAM, 0);
-	// domain IPv4 주소 체계, sockets type TCP 이용, protocol 0은 type 에 지정한 값 이용
-	if (_fdSocket == -1)
-		sysError();
+	if (_fdSocket == FAIL)
+		sysError(ERR_SOCKET);
+
 	struct sockaddr_in svAddr;
 	std::memset(&svAddr, 0, sizeof(svAddr));
 	svAddr.sin_family = AF_INET;
 	svAddr.sin_addr.s_addr = INADDR_ANY;
 	svAddr.sin_port = htons(8080);
-	_binded = bind(_fdSocket, (struct sockaddr *)&svAddr, sizeof(svAddr)); // give the socket fd to local addr bind 용 캐스팅 필요
-	if (_binded == -1)
-		sysError();
-	// listen // 연결 대기 상태 만들기, 연결 요청 대기열 실제 연결은 accept, backlog 는 동시에 대기열 쌓아둘 수 있는 연결 요청 개수 OS 가 max 강제 제한
-	_listening = listen(_fdSocket, config.backlog);
-	if (_listening == -1)
-		sysError();
-	// after socket bind listen server is open
-	// * update server's fd to the poll list for the idx 0 - struct only for poll ? class with member function ?
-}
 
-void Server::recvServ()
-{
-	ServerConfig config;
-	char* buff_hard[1024]; 
+	_binded = bind(_fdSocket, (struct sockaddr *)&svAddr, sizeof(svAddr)); // give the socket fd to local addr, cast for bind
+	if (_binded == FAIL)
+		sysError(ERR_BIND);
 
-	recv(client->getFd(), buff_hard, sizeof(buff_hard), 0); // 데이터 받기
-}
+	_listening = listen(_fdSocket, SOMAXCONN); // client can connect() from now on
+	if (_listening == FAIL)
+		sysError(ERR_LISTEN);
 
-void Server::sendServ()
-{
-	ServerConfig config;
-	char* buff_hard[1024]; 
-	send(client->getFd(), buff_hard, sizeof(buff_hard), 0); // 데이터 보내기
+	// * update server's fd to the poll list for the idx 0
+	struct pollfd temp_pollfd;
+	temp_pollfd.fd = _fdSocket;
+	temp_pollfd.events = POLLIN;
+	temp_pollfd.revents = 0;
+	
+	std::vector<struct pollfd>::iterator it = _polling.begin();
+	_polling.insert(it, temp_pollfd);
+	printf("%i\n", _polling[0].fd);
 }
 
 void Server::runServer()
 {
-	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
-	std::memset(&clientAddr, 0, sizeof(clientAddr));
-	ServerConfig config;
-	// 클라 접속 처리 (accept)
-	while (!g_sig) // make signal enums on somewhere ?
+	// while (!g_sig) // define signal (enums, global variable somewhere)
+	while (1)
 	{
-		poll(fds, nfds, 1000);
-		// 1) check the Server event from the first idx of poll list
-		// 2) accept to get the new clients
-		socklen_t client_addr_size = sizeof(clientAddr); // not hardcoded, how i get it?
-		// getter inside of client ?
-		// if (client_addr_size == -1) // maybe debug needed here ?
-		// 	// ?
-		int temp_clientFd = accept(_fdSocket, (struct sockaddr *)&clientAddr, &client_addr_size); // struct 에 저장할 것임
-		// setter ?
-		// 3) put the new clients on the poll list
-		client->setAdd(temp_clientFd);
-		if (temp_clientFd == -1)
-			sysError();
-
-		while (poll list till the end)
+		int serverEvent = poll(_polling.data(), 1, 1000);
+		if (serverEvent < 0)
+			sysError(ERR_POLL);
+		if (serverEvent == 0)
+			timeOut();
+		if  (serverEvent == 1)
 		{
-			// read and do the action as needed use enum or signal
-			// 1) recv
-			// 2) send
-			// 3) disconnected client : update the "delete" list
-			// (getting EXECUTION result based(it should contain Client info) on the Client and ***treat it***)
+			if (_polling[0].revents & POLLIN) // revents is bitmask so &
+				updPoll();
 		}
-		// look at the "delete" list and delete
+		int i = 1;
+		std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+		while (it != _polling.end())
+		{
+			if (_polling[i].revents & POLLIN)
+			{
+				recvServ(_polling[i].fd , &i);
+			}
+			else if (_polling[i].revents & POLLOUT)
+			{
+				sendServ(_polling[i].fd, &i);
+			}
+			else if (_polling[i].revents & POLLHUP)
+			{
+				_todelFds.insert(_polling[i].fd);
+			}
+		}
+		++it;
+		++i;
+		delClients();
 	}
+	// signal occured or quit kind of ?
+	cleanDown();
 }
 
-int Server::disServer()
+void Server::setPolling(int fd, int flag)
 {
-	// close()
-}
-
-void Server::sysError()
-{
-	// system call error (socket bind)
-	// clean exit ? with which exit status ? 1 ?
-	exit(1);
+	// caller to put flag or i can divide with more evident name for each case
+	int i = 1;
+	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+	while (it != _polling.end())
+	{
+		if (_polling[i].fd == fd && flag == set_POLLOUT)
+			_polling[i].events = POLLOUT;
+		else if (_polling[i].fd == fd && flag == set_POLLHUP)
+			_polling[i].events = POLLOUT;
+		return ;
+		++it;
+		++i;
+	}
 }

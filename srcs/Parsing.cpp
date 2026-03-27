@@ -6,7 +6,6 @@ Parsing::Parsing()
 {
 }
 
-
 Parsing::Parsing(const Parsing &)
 {
 }
@@ -29,25 +28,23 @@ Parsing::~Parsing()
 Message	Parsing::parseLine(const std::string& line)
 {
 	Message		msg;
+	size_t end = line.size() - 1;
+	size_t max = 510;
 
-	if (!line.size() || line.size() > 510)
-	{
-		std::cerr << "Message is too long" << std::endl;
-		return(msg);
-	}
+	if (!line.size())
+		throw	std::invalid_argument("Line couldn't be read");
 	std::string	cpy = line;
 
-	if (cpy.empty())
-	{
-		std::cerr << "Pb with cpy" << std::endl; // juste un test, a supprimer à la fin
-		return(msg);	
-	}
+	if (cpy.size() > 510) // enlever les \r\n avant ou les inclure après le erase ?
+		cpy.erase(max, end - max);
 	if (!cpy.empty() && cpy[0] == ':')
 		msg.prefix = extractPrefix(cpy);
 	if (!cpy.empty())
 		msg.cmd = extractCmd(cpy);
-	//msg.trailing = extractTrailing(cpy);
-	//cpy.extractParams();
+	if (!cpy.empty() && cpy.find(':'))
+		msg.trailing = extractTrailing(cpy);
+	if (!cpy.empty())
+		msg.params = extractParams(cpy);
 	return (msg);
 }
 
@@ -86,15 +83,52 @@ std::string Parsing::extractCmd(std::string& line)
 		line.erase(0, spacePos + 1);
 	}
 	for (size_t i = 0; i < cmd.size(); i++)
-		cmd[i] = std::toupper(cmd[i]);
+		cmd[i] = std::toupper(cmd[i]); 
 	return (cmd);
 }
 
-/*
-
 std::string Parsing::extractTrailing(std::string& line)
 {
-	if ()
+	std::string		trailing;
+	size_t end = line.size();
+	size_t start = line.find(':');
+
+	//std::cout << "line is : " << line << std::endl; // debug
+	//std::cout << "end is : " << end << std::endl; // debug
+	
+	while (end > 0 && line[end - 1] == ' ')
+		end--;
+	trailing = line.substr(start + 1, end - (start + 1));
+
+	//std::cout << "end is : " << end << std::endl; // debug
+	//std::cout << "trailing is : " << trailing << std::endl;
+
+	line.erase(start, end - start);
+
+	//std::cout << "line is : " << line << std::endl; // debug
+	return (trailing);
 }
 
-*/
+std::vector<std::string> Parsing::extractParams(std::string& line)
+{
+	std::vector<std::string>	params;
+	size_t	i = 0;
+
+	while (i < line.size())
+	{
+		while (i < line.size() && line[i] == ' ')
+			i++;
+		if (i >= line.size())
+			break;
+
+		size_t start = i;
+
+		while (i < line.size() && line[i] != ' ')
+			i++;
+		std::string param = line.substr(start, i - start);
+		params.push_back(param);
+	}
+	line.clear();
+
+	return (params);
+}

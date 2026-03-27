@@ -18,10 +18,10 @@ struct Message {
 class Parsing
 {
 private:
-	std::string extractPrefix(std::string& line);
-	std::string extractCmd(std::string& line);
-	//extractParams();
-	//std::string extractTrailing(std::string& line);
+	std::string 				extractPrefix(std::string& line);
+	std::string 				extractCmd(std::string& line);
+	std::vector<std::string>	extractParams(std::string& line);
+	std::string 				extractTrailing(std::string& line);
 	
 public:
 	Parsing();

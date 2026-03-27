@@ -42,8 +42,12 @@ installation, and/or execution
 
 listing classic references related to the topic (documentation, articles, tutorials etc.), as well as a description of how AI was used specifying for which tasks and which parts of the project.
 
-<sup> keait-he's ressources: </sup>
+<keait-he's ressources:
 	- https://www.rfc-editor.org/rfc/rfc2812#section-2.3 To know about Messages' structures
+	- https://cplusplus.com/reference For functions' usage
+	- 
+
+
 
 ---
 

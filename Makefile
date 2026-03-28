@@ -22,7 +22,8 @@ TEST_SRCS   := test/main_test.cpp \
                test/test_client.cpp \
                test/test_channel.cpp \
                test/utils_tests.cpp \
-			   test/test_validator.cpp
+			   test/test_validator.cpp \
+			   test/test_Dispatcher.cpp
 
 ### OBJECTS & DEPS #############################################################
 

@@ -50,6 +50,8 @@ void Executor::execNick(Client* client, const Message& msg) {
 
     std::string newNick = msg.params[0];
 
+    // faut vérifier si le mdp est valid ici avec  _server->getPassword()
+
     if (!CommandValidator::isValidNickname(newNick)) {
         Reply::error(client, ERR_ERRONEUSNICKNAME, newNick, "Erroneous nickname");
         return;
@@ -75,7 +77,7 @@ void Executor::execPass(Client* client, const Message& msg) {
         return;
     }
 
-    std::string serverPassword = "test"; 
+    std::string serverPassword = "test"; // mdp en dur pour le moment. Il faut faire _server->getPassword() (on attends le serveur pour l'instant) 
     
     if (msg.params[0] != serverPassword) {
         Reply::error(client, ERR_PASSWDMISMATCH, "PASS", "Password incorrect");

@@ -71,41 +71,72 @@ const std::map<int, Client*>& Server::congetC(void) const
 	return this->_clients;
 }
 
+int Server::isDis(int fd)
+{
+	// based on the fd check pollfd's revents flag
+	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+	while (it != _polling.end())
+	{
+		if (fd == it->fd)
+		{
+			if (it->revents & POLLHUP || it->revents & POLLERR || it->revents & POLLNVAL)
+			return (1);
+		}
+		++it;
+	}
+	return (0);
+}
+
 void Server::recvServ(int fd, int *i)
 {
 	//_readBuffer (읽다 만 데이터 보관)을 recv 로 읽기
 	char tempBuff[1024];
-	while (읽을게 남아 있는 동안..)
+	while (1)
 	{
 		int ret = recv(fd, tempBuff, sizeof(tempBuff), 0);
 		if (ret < 0) // ret < 0 && errno ==EGAIN/EWOULDBLOCK 이래야 지금 읽을 거 끝이라 하네
 		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 			{
-				// set timeout and continue
+				break ;
 			}
-			else if (errno == -1) // xxxx wtf is this if < 0 and if == -1 lol 존나 이상함;;;;
-				_todelFds.insert(_polling[*i].fd);
+			_todelFds.insert(_polling[*i].fd);
+			break ;
 		}
 		else if (ret == 0) // 상대 종료
 		{
 			_todelFds.insert(_polling[*i].fd);
-			// FIN or RTS from the client so socket close
+			break ;
 		}
-		else // (ret > 0) 이면 계속 append
+		std::map<int, Client*>::iterator it = _clients.find(fd);
+		if (it != _clients.end())
 		{
-			여기에 해당하는 client 는 fd 를 map 에다 찾아낸 애
-			client->appendToReadBuffer(const std::string& data);
-			한번에 모든 메시지를 다 받았다고 장담하지 말것
-			버퍼 사이즈만큼 꽉 차게 받았다면 다시 받아본다든지.. 
-			한번 recv에 하나의 메시지 패킷만 수신되지 않을 수 있음 아마 이건 \r\n 으로 끊으면 될듯
-			수신 버퍼 크기가 100인데 60짜리 메시지 패킷이 연달아 2개 와서 60+40으로 리턴 등
+			Client* client = it->second;
+			client->appendToReadBuffer(std::string(tempBuff, ret));
+			if (client->getReadBuffer().size() > MAX_READ_BUFF) // message too long ? without finding \r\n i donno if its needed
+			{
+				_todelFds.insert(_polling[*i].fd);
+				break ;
+			}
+			size_t pos; // 없으면 std::string::nps
+			while (pos = client->getReadBuffer().find("\r\n") != std::string::npos)
+			{
+				if (pos > MAX_ONE_MESSAGE) // > need to check the condition (> 512)
+				{
+					_todelFds.insert(_polling[*i].fd);
+					break ;
+				}
+				std::string oneLine = client->extractMessage();
+				if (isDis(fd))	
+				{
+					_todelFds.insert(_polling[*i].fd);
+					break ;
+				}
+				if (!(oneLine == ""))
+					toParser(fd, oneLine);
+			}
 		}
-		//this function return the size of the message on successful completion
-		// if no messages are available at the socket, the receive calls wait for a m
 	}
-	// 버퍼가 비었든 안 비었든 대게 POLLIN 은 안끔 읽기 이벤트는 항상 감시~
-	// recv 쪽도 처리된 부분은 버퍼에서 제거하지만 버퍼 비었다고 플래그 끄는 건 아님 ㅋㅋ
 }
 
 void Server::sendServ(int fd, int *i)

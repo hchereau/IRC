@@ -20,6 +20,9 @@
 #include <stdio.h> // debug printf
 #include <csignal>
 
+#define MAX_READ_BUFF 9999 // need to think of the exact value
+#define MAX_ONE_MESSAGE 512
+
 typedef enum s_syserror
 {
 	ERR_SOCKET,
@@ -54,6 +57,7 @@ class Server {
 
 	void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
+	int isDis(int fd);
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
 	void privateMsg(const std::string& msg);

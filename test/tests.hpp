@@ -6,3 +6,4 @@ void    runClientTests();
 void    runChannelTests();
 void    printTestResult(const std::string& testName, bool condition);
 void    runValidationTest();
+void 	testDispatcherOnly();

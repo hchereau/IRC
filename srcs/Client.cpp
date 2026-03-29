@@ -2,7 +2,7 @@
 
 //default 
 Client::Client(int fd, const std::string& hostname) 
-    : _clientFd(fd), _hostname(hostname), _state(UNREGISTERED) {
+    : _clientFd(fd), _hostname(hostname), _state(UNREGISTERED), _toDisconnect(false) {
 }
 
 Client::Client(Client const & other) {
@@ -65,6 +65,10 @@ void Client::setRealname(const std::string& real) {
 
 void Client::setState(RegistrationState state) {
     _state = state;
+}
+
+void 	Client::setToDisconnect(bool status) {
+    _toDisconnect = status;
 }
 
 // buffer management

@@ -36,6 +36,7 @@ typedef enum s_syserror
 
 typedef enum s_eventflag
 {
+	set_POLLIN,
 	set_POLLOUT,
 	set_POLLHUP
 } t_eventflag;
@@ -57,7 +58,7 @@ class Server {
 
 	void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
-	int isDis(int fd);
+	int  isDis(int fd);
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
 	void privateMsg(const std::string& msg);

@@ -1,11 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-// Server::Server() : _port(-1), _fdSocket(-1), _binded(-1), _listening(-1), _accepted(-1)
-// {
-// 	// others are set to fail flag, port is from 0 so just -1
-// }
-
 Server::Server(int port, std::string password) : _port(port), _password(password), _fdSocket(-1), _binded(-1), _listening(-1)
 {
 
@@ -96,10 +91,10 @@ void Server::recvServ(int fd, int *i)
 		int ret = recv(fd, tempBuff, sizeof(tempBuff), 0);
 		if (ret < 0) // ret < 0 && errno ==EGAIN/EWOULDBLOCK 이래야 지금 읽을 거 끝이라 하네
 		{
+			if (errno == EINTR)
+				continue ;
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
-			{
 				break ;
-			}
 			_todelFds.insert(_polling[*i].fd);
 			break ;
 		}
@@ -142,43 +137,25 @@ void Server::recvServ(int fd, int *i)
 void Server::sendServ(int fd, int *i)
 {
 	// _writeBuffer(쓰다 만 데이터 보관) 를 send 로 비워야 함
-	char tempBuff[1024]; 
-	while (42)
+	Client* client = _clients[fd]; // should be sure if this fd on the map
+	std::string& wbuff = client->getWriteBuffer();
+	while (!wbuff.empty())
 	{
-		int sent = send(fd, tempBuff, sizeof(tempBuff), 0);
-		if (sent < 0)
+		int ret = send(fd, wbuff.c_str(), wbuff.size(), 0);
+		if (ret < 0)
 		{
+			if (errno == EINTR)
+				continue ;
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
-			{
-				// set timeout and continue
-			}
-			else if (errno == -1)
-				_todelFds.insert(_polling[*i].fd);
-		}
-		else if (errno == -1)
+				break ;
 			_todelFds.insert(_polling[*i].fd);
-		else if (sent == 0)
-		{	
-			// SIGPIPE 처리 관련, SIGPIPE signal 을 받고 프로세스가 죽어버리는 경우
-			// signal(SIGPIPE, SIG_IGN); 을 프로그램 시작 직후에 넣어두면 
-			// send 실행 시 연결이 끊어져 있어도 프로세스를 종료하지 않고 단순히 -1을 반환함 -> 그렇게 해둠
-			_todelFds.insert(_polling[*i].fd);
+			break ;
 		}
-		else
-		{
-			void	appendToWriteBuffer(const std::string& data);
-			보내는 패킷의 길이만큼 모두다 보내는데 성공했는가
-			부족한 경우 
-			{
-				while (timeout)	
-					timeout 만큼 재전송 로직 구현
-				혹은 폐기 등..
-			}
-		}
+		if (ret == wbuff.size())
+			setPolling(fd, set_POLLIN);
+		wbuff.erase(0, ret);
 	}
-	// 다 보내졌으면 비우고 POLLOUT 끔
-} // 그 외에 EINTR 은 인터럽트가 발생하여 send 나 recv 가 빠져나오는 경우는 뭔진 모르겠지만 처리할
-// 일인지 체크하기
+}
 
 // execution logics and uses, on the server class
 void Server::privateMsg(const std::string& msg)
@@ -232,8 +209,6 @@ void Server::delClients(void)
 	}
 	_todelFds.clear();
 }
-
-	// close()
 
 void Server::sysError(int sys_enum)
 {
@@ -328,7 +303,9 @@ void Server::setPolling(int fd, int flag)
 	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
 	while (it != _polling.end())
 	{
-		if (_polling[i].fd == fd && flag == set_POLLOUT)
+		if (_polling[i].fd == fd && flag == set_POLLIN)
+			_polling[i].events = POLLIN;
+		else if (_polling[i].fd == fd && flag == set_POLLOUT)
 			_polling[i].events = POLLOUT;
 		else if (_polling[i].fd == fd && flag == set_POLLHUP)
 			_polling[i].events = POLLHUP;

@@ -77,15 +77,17 @@ void Client::appendToReadBuffer(const std::string& data) {
 }
 
 void Client::appendToWriteBuffer(const std::string& data) {
-    _writeBuffer += data;
+    _writeBuffer += data + "\r\n";
 }
 
 std::string& Client::getWriteBuffer() {
     return _writeBuffer;
 }
 
-void Client::clearWriteBuffer() {
-    _writeBuffer.clear();
+void Client::clearSentBytes(size_t sentBytes) {
+    if (sentBytes <= _writeBuffer.length()) {
+        _writeBuffer.erase(0, sentBytes);
+    }
 }
 
 std::string Client::extractMessage() {

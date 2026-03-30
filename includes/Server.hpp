@@ -53,7 +53,7 @@ class Server {
 	int	_binded; // hmm
 	int _listening; // hmm
 
-	std::map<int, Client*> _clients; // _clients[fd] or iterator ..
+	std::map<int, Client*> _clients;
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
 	std::map<std::string, Channel*> _channels;
@@ -87,8 +87,8 @@ class Server {
 	const std::map<int, Client*>& congetC(void) const;
 
 	// Clients management
-	void    addClient(int fd, std::string hostname);
-	void    removeClient(int fd);
+	// void    addClient(int fd, std::string hostname); <- didnt make a separate function
+	// void    removeClient(int fd); <- using delClients 
 	Client* getClientByFd(int fd);
 
 	// Channels management

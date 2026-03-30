@@ -43,6 +43,17 @@ void Server::addChannel(const std::string& name) {
     }
 }
 
+void Server::removeChannel(const std::string& name)
+{
+	std::map<std::string, Channel*>::iterator it = _channels.find(name);
+	if (it != _channels.end())
+	{
+		delete it->second;
+		_channels.erase(it);
+	}
+	// 채널 목록에서 없애구, 채널 delete dealloc 관리하기
+}
+
 void Server::timeOut(void)
 {
 	// i donno how to deal with timeout
@@ -201,6 +212,16 @@ void Server::broadCastAll(const std::string& msg, int notThisFd)
 	각 대상 fd 에 POLLOUT 켜기
 }
 
+Client* Server::getClientByFd(int fd)
+{
+	// return _clients.at(fd); ++11 lol
+	std::map<int, Client*>::iterator it = _clients.find(fd);
+	if (it != _clients.end())
+		return it->second;
+	return NULL;
+}
+
+
 void Server::delClients(void)
 {
 	std::vector<struct pollfd>::iterator p_it = _polling.begin() + 1;
@@ -235,9 +256,20 @@ void Server::sysError(int sys_enum)
 	exit(1);
 }
 
-void Server::cleanDown()
+void Server::cleanDown() // 더 지울거 생각해보깅
 {
-
+	std::map<std::string, Channel*>::iterator it = _channels.begin();
+	for (_channels.begin(); it != _channels.end(); ++it)
+	{
+		delete(it->second);
+	}
+	std::map<int, Client*>::iterator c_it = _clients.begin();
+	for (_clients.begin(); c_it != _clients.end(); ++c_it)
+	{
+		delete(c_it->second);
+		close(c_it->first);
+	}
+	close (_fdSocket);
 }
 
 void Server::confServer()

@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <stdio.h> // debug printf
 #include <csignal>
+#include <atomic>
 
 #define MAX_READ_BUFF 9999 // need to think of the exact value
 #define MAX_ONE_MESSAGE 512
@@ -55,10 +56,10 @@ class Server {
 	std::map<int, Client*> _clients; // _clients[fd] or iterator ..
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
+	std::map<std::string, Channel*> _channels;
 
 	void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
-	int  isDis(int fd);
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
 	void privateMsg(const std::string& msg);
@@ -75,12 +76,25 @@ class Server {
 	Server& operator=(const Server &other);
 	~Server();
 
+
 	void confServer(void);
+	void runServer(void);
+
+	void setPolling(int fd, int flag);
+	int  isDis(int fd);
+
 	std::map<int, Client*> getClients(void) const;
 	const std::map<int, Client*>& congetC(void) const;
 
-	void runServer(void);
-	void setPolling(int fd, int flag);
+	// Clients management
+	void    addClient(int fd, std::string hostname);
+	void    removeClient(int fd);
+	Client* getClientByFd(int fd);
+
+	// Channels management
+	void    addChannel(const std::string& name);
+	void    removeChannel(const std::string& name);
+	Channel* getChannelByName(const std::string& name);
 
 };
 

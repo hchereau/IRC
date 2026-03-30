@@ -1,6 +1,8 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
+volatile std::sig_atomic_t sigFlag = 0;
+
 Server::Server(int port, std::string password) : _port(port), _password(password), _fdSocket(-1), _binded(-1), _listening(-1)
 {
 
@@ -25,6 +27,20 @@ Server::Server(Server &other)
 Server::~Server()
 {
 
+}
+
+Channel* Server::getChannelByName(const std::string& name) {
+    std::map<std::string, Channel*>::iterator it = _channels.find(name);
+    if (it != _channels.end()) {
+        return it->second;
+    }
+    return NULL;
+}
+
+void Server::addChannel(const std::string& name) {
+    if (_channels.find(name) == _channels.end()) {
+        _channels[name] = new Channel(name);
+    }
 }
 
 void Server::timeOut(void)
@@ -114,7 +130,7 @@ void Server::recvServ(int fd, int *i)
 				break ;
 			}
 			size_t pos; // 없으면 std::string::nps
-			while (pos = client->getReadBuffer().find("\r\n") != std::string::npos)
+			while ((pos = client->getReadBuffer().find("\r\n")) != std::string::npos)
 			{
 				if (pos > MAX_ONE_MESSAGE) // > need to check the condition (> 512)
 				{
@@ -256,24 +272,35 @@ void Server::confServer()
 	printf("%i\n", _polling[0].fd);
 }
 
+void sigHandler(int sig)
+{
+    sigFlag = 1;
+}
+
+void sigSet(void)
+{
+    std::signal(SIGINT, sigHandler);
+    std::signal(SIGTERM, sigHandler);
+    std::signal(SIGPIPE, SIG_IGN);
+}
+
 void Server::runServer()
 {
-	// while (!g_sig) // define signal (enums, global variable somewhere)
-	while (1)
+	while (!sigHandler)
 	{
-		int serverEvent = poll(_polling.data(), 1, 1000);
-		if (serverEvent < 0)
+		int fdPerform = poll(_polling.data(), _polling.size(), 1000);
+		if (fdPerform < 0)
 			sysError(ERR_POLL);
-		if (serverEvent == 0)
+		if (fdPerform == 0)
+		{	
 			timeOut();
-		if  (serverEvent == 1)
-		{
-			if (_polling[0].revents & POLLIN) // revents is bitmask so &
-				updPoll();
+			continue ;
 		}
+		if (_polling[0].revents & POLLIN) // revents is bitmask so &
+			updPoll();
 		int i = 1;
 		std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
-		while (it != _polling.end()) // 얘네 지금 poll 제대로 안되고 있음!
+		while (it != _polling.end())
 		{
 			if (_polling[i].revents & POLLIN)
 			{

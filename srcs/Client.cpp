@@ -77,7 +77,7 @@ void Client::appendToReadBuffer(const std::string& data) {
 }
 
 void Client::appendToWriteBuffer(const std::string& data) {
-    _writeBuffer += data + "\r\n";
+    _writeBuffer += data;
 }
 
 std::string& Client::getWriteBuffer() {

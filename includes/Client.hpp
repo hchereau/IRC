@@ -43,7 +43,7 @@ class Client {
 		std::string	extractMessage();
 		
 		std::string& getWriteBuffer();
-		void Client::clearSentBytes(size_t sentBytes);
+		void clearSentBytes(size_t sentBytes);
 
 	private:
 		Client();

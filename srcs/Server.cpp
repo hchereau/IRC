@@ -1,3 +1,4 @@
+
 #include "Server.hpp"
 #include "Client.hpp"
 
@@ -358,17 +359,16 @@ void Server::runServer()
 void Server::setPolling(int fd, int flag)
 {
 	// caller to put flag or i can divide with more evident name for each case
-	int i = 1;
-	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
-	while (it != _polling.end())
+	for (std::vector<struct pollfd>::iterator it = _polling.begin() + 1; it != _polling.end(); ++it)
 	{
-		if (_polling[i].fd == fd && flag == set_POLLIN)
-			_polling[i].events = POLLIN;
-		else if (_polling[i].fd == fd && flag == set_POLLOUT)
-			_polling[i].events = POLLOUT;
-		else if (_polling[i].fd == fd && flag == set_POLLHUP)
-			_polling[i].events = POLLHUP;
-		++it;
-		++i;
-	}
+        if (it->fd == fd)
+        {
+            if (flag == set_POLLIN)
+			    it->events = POLLIN;
+            else if (flag == set_POLLOUT)
+			    it->events = POLLOUT;
+            else if (flag == set_POLLHUP)
+                it->events = POLLHUP;
+        }
+    }
 }

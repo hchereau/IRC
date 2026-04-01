@@ -50,19 +50,17 @@ class Server {
 	std::string _password;
 
 	int	_fdSocket;
-	int	_binded; // hmm
-	int _listening; // hmm
 
 	std::map<int, Client*> _clients;
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
 	std::map<std::string, Channel*> _channels;
 
-	void timeOut(void);
+	// void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
-	void privateMsg(const std::string& msg);
+	void privateMsg(const std::string& targetNick, const std::string& msg);
 	void channelMsg(const std::string& msg);
 	void broadCastAll(const std::string& msg, int notThisFd);
 	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
@@ -72,8 +70,6 @@ class Server {
 	public:
 	
 	Server(int port, std::string password);
-	Server(Server &other);
-	Server& operator=(const Server &other);
 	~Server();
 
 
@@ -88,10 +84,14 @@ class Server {
 
 	// Clients management
 	// void    addClient(int fd, std::string hostname); <- didnt make a separate function
-	// void    removeClient(int fd); <- using delClients 
+	// void    removeClient(int fd); <- using delClients
+	std::string getPassword(void);
 	Client* getClientByFd(int fd);
+	Client* getClientByNick(const std::string& name);
+
 
 	// Channels management
+	void    getOrCreateChannel(const std::string& name);
 	void    addChannel(const std::string& name);
 	void    removeChannel(const std::string& name);
 	Channel* getChannelByName(const std::string& name);

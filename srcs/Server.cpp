@@ -4,31 +4,25 @@
 
 volatile std::sig_atomic_t sigFlag = 0;
 
-Server::Server(int port, std::string password) : _port(port), _password(password), _fdSocket(-1), _binded(-1), _listening(-1)
+Server::Server(int port, std::string password) : _port(port), _password(password), _fdSocket(-1)
 {
 
 }
-
-Server::Server(Server &other)
-{
-	if (this != &other)
-	{
-		this->_port = other._port;
-		this->_fdSocket = other._fdSocket;
-		this->_binded = other._binded;
-		this->_listening = other._listening;
-	}
-}
-
-// Server& Server::operator=(const Server &other)
-// {
-
-// }
 
 Server::~Server()
 {
 
 }
+
+Channel* Server::getOrCreateChannel(const std::string& name)
+{
+	Channel* channel = getChannelByName(name);
+	if (channel != NULL)
+		return (channel);
+	addChannel(name);
+		return (getChannelByName(name));
+}
+
 
 Channel* Server::getChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _channels.find(name);
@@ -55,10 +49,10 @@ void Server::removeChannel(const std::string& name)
 	// 채널 목록에서 없애구, 채널 delete dealloc 관리하기
 }
 
-void Server::timeOut(void)
-{
-	// i donno how to deal with timeout
-}
+// void Server::timeOut(void)
+// {
+// 	// seems no need except for poll 1000
+// }
 
 void Server::updPoll(void)
 {
@@ -72,7 +66,11 @@ void Server::updPoll(void)
 		sysError(ERR_ACCEPT);
 		return ;
 	}
-	fcntl(temp_clientFd, F_SETFL, O_NONBLOCK);
+	if (fcntl(temp_clientFd, F_SETFL, O_NONBLOCK) == -1)
+	{
+		close(temp_clientFd);
+		return ;
+	}
 	pollfd add_to_polling;
 	add_to_polling.fd = temp_clientFd;
 	add_to_polling.events = POLLIN;
@@ -165,7 +163,10 @@ void Server::recvServ(int fd, int *i)
 void Server::sendServ(int fd, int *i)
 {
 	// _writeBuffer(쓰다 만 데이터 보관) 를 send 로 비워야 함
-	Client* client = _clients[fd]; // should be sure if this fd on the map
+	std::map<int, Client*>::iterator it = _clients.find(fd);
+	if (it == _clients.end())
+		return ;
+	Client* client = it->second;
 	std::string& wbuff = client->getWriteBuffer();
 	while (!wbuff.empty())
 	{
@@ -186,11 +187,13 @@ void Server::sendServ(int fd, int *i)
 }
 
 // execution logics and uses, on the server class
-void Server::privateMsg(const std::string& msg)
+void Server::privateMsg(const std::string& targNick, const std::string& msg)
 {
-	닉네임으로 target client 찾아서
-	그 사람 writeBuffer 에 append 
-	POLLOUT 켜기	
+	Client* targ = getClientByNick(targNick);
+	if (!targ)
+		return ;
+	targ->appendTowriteBuffer(msg);
+	setPolling(targ->getFd(), set_POLLOUT);
 }
 
 // this one maybe no need
@@ -207,21 +210,39 @@ void Server::channelMsg(const std::string& msg)
 // server broadCast
 void Server::broadCastAll(const std::string& msg, int notThisFd)
 {
-	_clients 순회해서
-	보낸 사람 제외하고
-	각 대상의 appendToWriteBbuffer(msg)
-	각 대상 fd 에 POLLOUT 켜기
+	std::map<int, Client*>::iterator it;
+	for (it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->first == notThisFd)
+			continue;
+		it->second->appendTowriteBuffer(msg);
+		setPolling(it->second->getFd(), set_POLLOUT);
+	}
+}
+
+std::string Server::getPassword(void) // go const or better this way?
+{
+	return this->_password;
 }
 
 Client* Server::getClientByFd(int fd)
 {
-	// return _clients.at(fd); ++11 lol
 	std::map<int, Client*>::iterator it = _clients.find(fd);
 	if (it != _clients.end())
 		return it->second;
 	return NULL;
 }
 
+Client* Server::getClientByNick(const std::string& nickname)
+{
+	std::map<int, Client*>::iterator it;
+	for (it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->second->getNickname() == nickname)
+			return it->second;
+	}
+	return NULL;
+}
 
 void Server::delClients(void)
 {
@@ -254,23 +275,28 @@ void Server::sysError(int sys_enum)
 	std::cerr << "Error_systemcall: " << errors[sys_enum] << " " << strerror(errno) << std::endl;
 	if (sys_enum == ERR_ACCEPT)
 		return ;
+	cleanDown();
 	exit(1);
 }
 
-void Server::cleanDown() // 더 지울거 생각해보깅
+void Server::cleanDown()
 {
 	std::map<std::string, Channel*>::iterator it = _channels.begin();
-	for (_channels.begin(); it != _channels.end(); ++it)
+	for (; it != _channels.end(); ++it)
 	{
 		delete(it->second);
 	}
+	_channels.clear();
 	std::map<int, Client*>::iterator c_it = _clients.begin();
-	for (_clients.begin(); c_it != _clients.end(); ++c_it)
+	for (; c_it != _clients.end(); ++c_it)
 	{
 		delete(c_it->second);
 		close(c_it->first);
 	}
-	close (_fdSocket);
+	_clients.clear(); // need to verify with client destructor
+	if (_fdSocket >= 0)
+		close (_fdSocket);
+	_fdSocket = -1;
 }
 
 void Server::confServer()
@@ -286,12 +312,12 @@ void Server::confServer()
 	svAddr.sin_addr.s_addr = INADDR_ANY;
 	svAddr.sin_port = htons(_port); // 생성자에서 port 받을텐데
 
-	_binded = bind(_fdSocket, (struct sockaddr *)&svAddr, sizeof(svAddr)); // give the socket fd to local addr, cast for bind
-	if (_binded == FAIL)
+	int bound = bind(_fdSocket, (struct sockaddr *)&svAddr, sizeof(svAddr)); // give the socket fd to local addr, cast for bind
+	if (bound == FAIL)
 		sysError(ERR_BIND);
 
-	_listening = listen(_fdSocket, SOMAXCONN); // client can connect() from now on
-	if (_listening == FAIL)
+	int listening = listen(_fdSocket, SOMAXCONN); // client can connect() from now on
+	if (listening == FAIL)
 		sysError(ERR_LISTEN);
 
 	// * update server's fd to the poll list for the idx 0
@@ -319,14 +345,14 @@ void sigSet(void)
 
 void Server::runServer()
 {
-	while (!sigHandler)
+	while (!sigFlag)
 	{
 		int fdPerform = poll(_polling.data(), _polling.size(), 1000);
 		if (fdPerform < 0)
 			sysError(ERR_POLL);
 		if (fdPerform == 0)
 		{	
-			timeOut();
+			// timeOut();
 			continue ;
 		}
 		if (_polling[0].revents & POLLIN) // revents is bitmask so &

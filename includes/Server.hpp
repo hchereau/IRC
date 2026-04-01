@@ -59,11 +59,10 @@ class Server {
 	void updPoll(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
-	void regiReply(Client* client);
-	void errReply(Client* client);
 	void privateMsg(const std::string& targetNick, const std::string& msg);
 	void channelMsg(const std::string& name, Client* sender, const std::string& msg);
 	void broadCastAll(const std::string& msg, int notThisFd);
+	void delInChannel(void);
 	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);
 	void cleanDown(); // when sig(global variable) catched while run server loop etc
@@ -84,8 +83,6 @@ class Server {
 	const std::map<int, Client*>& congetC(void) const;
 
 	// Clients management
-	// void    addClient(int fd, std::string hostname); <- didnt make a separate function
-	// void    removeClient(int fd); <- using delClients
 	const std::string& getPassword(void) const;
 	Client* getClientByFd(int fd);
 	Client* getClientByNick(const std::string& name);

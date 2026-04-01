@@ -21,6 +21,11 @@ class Channel {
 		void addClient(Client* client);
 		void removeClient(Client* client);
 		bool isMember(Client* client) const;
+	
+	//need on server -------
+		bool isEmpty(); 
+	// a function that checks if theres no members in it
+	// i can delete the channel pointer and channel inside of _channels    
 
 
 	//operators

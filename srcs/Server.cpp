@@ -149,7 +149,7 @@ void Server::recvServ(int fd, int *i)
 					break ;
 				}
 				if (!(oneLine == ""))
-					toParser(fd, oneLine);
+					toParser(fd, oneLine); // a verifier
 			}
 		}
 	}
@@ -195,7 +195,7 @@ void Server::privateMsg(const std::string& targNick, const std::string& msg)
 	Client* targ = getClientByNick(targNick);
 	if (!targ)
 		return ; // need to check the protocol
-	targ->appendTowriteBuffer(msg);
+	targ->appendToWriteBuffer(msg);
 	setPolling(targ->getFd(), set_POLLOUT);
 }
 
@@ -207,7 +207,7 @@ void Server::channelMsg(const std::string& name, Client* sender, const std::stri
 	thisChannel->broadcastMessage(msg, sender);
 
 	const std::vector<Client*>& members = thisChannel->getMembers();
-	for (std::vector<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
+	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
 	{
 		if (*it != sender)
 			setPolling((*it)->getFd(), set_POLLOUT);
@@ -222,7 +222,7 @@ void Server::broadCastAll(const std::string& msg, int notThisFd)
 	{
 		if (it->first == notThisFd)
 			continue;
-		it->second->appendTowriteBuffer(msg);
+		it->second->appendToWriteBuffer(msg);
 		setPolling(it->second->getFd(), set_POLLOUT);
 	}
 }
@@ -251,6 +251,41 @@ Client* Server::getClientByNick(const std::string& nickname)
 	return NULL;
 }
 
+void Server::delInChannel(void)
+{
+	// first find and remove the matching clinet(s) using todelFds, on each channels  
+	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
+	while (ch_it != _channels.end())
+	{
+		Channel* channel = ch_it->second;
+		std::set<int>::iterator it = _todelFds.begin();
+		while (it != _todelFds.end())
+		{
+			int fd = *it;
+			if (_clients.find(fd) != _clients.end())
+			{
+				channel->removeClient(_clients[fd]);
+			}
+			++it;
+		}
+		it = _todelFds.begin();
+		++ch_it;
+	}
+	// then verify if theres no empty channel
+	ch_it = _channels.begin();
+	while (ch_it != _channels.end())
+	{
+		Channel* em_channel = ch_it->second;
+		if (em_channel->isEmpty()) // this channel is empty after deleting the clients on _todelFds
+		{
+			delete em_channel;
+			_channels.erase(ch_it++);
+		}
+		else
+		++ch_it;
+	}
+}
+
 void Server::delClients(void)
 {
 	std::vector<struct pollfd>::iterator p_it = _polling.begin() + 1;
@@ -261,19 +296,7 @@ void Server::delClients(void)
 		else
 			++p_it;
 	}
-	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
-	while (ch_it != _channels.end())
-	{
-		Channel* channel = ch_it->second;
-		channel->removeClient(client);
-		if (channel->empty())
-		{
-			delete channel;
-			_channels.erase(ch_it++);
-		}
-		else
-			++ch_it;
-	}
+	delInChannel();
 	std::set<int>::iterator c_it = _todelFds.begin();
 	while (c_it != _todelFds.end())
 	{
@@ -321,7 +344,7 @@ void Server::cleanDown()
 
 void Server::confServer()
 {
-	std::signal(SIGPIPE, SIG_IGN);
+	// std::signal(SIGPIPE, SIG_IGN);
 	_fdSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_fdSocket == FAIL)
 		sysError(ERR_SOCKET);
@@ -353,7 +376,6 @@ void Server::confServer()
 	
 	std::vector<struct pollfd>::iterator it = _polling.begin();
 	_polling.insert(it, temp_pollfd);
-	printf("%i\n", _polling[0].fd);
 }
 
 void sigHandler(int sig)

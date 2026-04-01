@@ -13,7 +13,6 @@ Executor::Executor(Server* server) : _server(server) {
 Executor::~Executor() {}
 
 void Executor::dispatchMessage(Client* client, const Message& msg) {
-	(void)_server;
     if (msg.cmd.empty())
         return;
 

@@ -207,7 +207,7 @@ void Server::channelMsg(const std::string& name, Client* sender, const std::stri
 	thisChannel->broadcastMessage(msg, sender);
 
 	const std::vector<Client*>& members = thisChannel->getMembers();
-	for (std::vector<Client*>::iterator it = members.begin(); it != members.end(); ++it)
+	for (std::vector<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
 	{
 		if (*it != sender)
 			setPolling((*it)->getFd(), set_POLLOUT);

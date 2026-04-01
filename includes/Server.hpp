@@ -89,7 +89,7 @@ class Server {
 
 
 	// Channels management
-	void    getOrCreateChannel(const std::string& name);
+	Channel*    getOrCreateChannel(const std::string& name);
 	void    addChannel(const std::string& name);
 	void    removeChannel(const std::string& name);
 	Channel* getChannelByName(const std::string& name);

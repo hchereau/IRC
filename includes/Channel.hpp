@@ -14,6 +14,8 @@ class Channel {
 		const std::string& getName() const;
 		const std::string& getTopic() const;
 		void setTopic(const std::string& topic);
+		const std::vector<Client*>& getMembers() const; // added for server channel msg
+
 
 	//Client management
 		void addClient(Client* client);

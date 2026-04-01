@@ -49,11 +49,6 @@ void Server::removeChannel(const std::string& name)
 	// 채널 목록에서 없애구, 채널 delete dealloc 관리하기
 }
 
-// void Server::timeOut(void)
-// {
-// 	// seems no need except for poll 1000
-// }
-
 void Server::updPoll(void)
 {
 	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
@@ -191,20 +186,24 @@ void Server::privateMsg(const std::string& targNick, const std::string& msg)
 {
 	Client* targ = getClientByNick(targNick);
 	if (!targ)
-		return ;
+		return ; // need to check the protocol
 	targ->appendTowriteBuffer(msg);
 	setPolling(targ->getFd(), set_POLLOUT);
 }
 
-// this one maybe no need
-void Server::channelMsg(const std::string& msg)
+void Server::channelMsg(const std::string& name, Client* sender, const std::string& msg)
 {
-	Channel* channel = getterChannel ?; 
-	channel->broadcastMessage(msg, sender);
-	채널 멤버들 순회
-	sender 제외
-	각자의 writebuffer 에 append 
-	POLLOUT 켜기
+	Channel* thisChannel = getChannelByname(name);
+	if (!thisChannel)
+		return ;
+	thisChannel->broadcastMessage(msg, sender);
+
+	const std::vector<Client*>& members = thisChannel->getMembers();
+	for (std::vector<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
+	{
+		if (*it != sender)
+			setPolling((*it)->getFd(), set_POLLOUT);
+	}
 }
 
 // server broadCast
@@ -220,7 +219,7 @@ void Server::broadCastAll(const std::string& msg, int notThisFd)
 	}
 }
 
-std::string Server::getPassword(void) // go const or better this way?
+const std::string& Server::getPassword(void) const// go const or better this way?
 {
 	return this->_password;
 }
@@ -253,6 +252,19 @@ void Server::delClients(void)
 			p_it = _polling.erase(p_it);
 		else
 			++p_it;
+	}
+	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
+	while (ch_it != _Channels.end())
+	{
+		Channel* channel = ch_it->second;
+		channel->removeClient(client);
+		if (channel->empty())
+		{
+			delete channel;
+			_channels.erase(ch_it++);
+		}
+		else
+			++ch_it;
 	}
 	std::set<int>::iterator c_it = _todelFds.begin();
 	while (c_it != _todelFds.end())
@@ -312,6 +324,11 @@ void Server::confServer()
 	svAddr.sin_addr.s_addr = INADDR_ANY;
 	svAddr.sin_port = htons(_port); // 생성자에서 port 받을텐데
 
+	int activeReuse = 1;
+	if (setsockopt(_fdSocket, SOL_SOCKET, SO_REUSEADDR, &activeReuse, sizeof(activeReuse)) < 0)
+		sysError(ERR_SOCKET); // garantee reuse of the same socket even when server turned off and then on for bind()
+	if (fcntl(_fdSocket, F_SETFL, O_NONBLOCK) == -1)
+		sysError(ERR_SOCKET);
 	int bound = bind(_fdSocket, (struct sockaddr *)&svAddr, sizeof(svAddr)); // give the socket fd to local addr, cast for bind
 	if (bound == FAIL)
 		sysError(ERR_BIND);
@@ -349,7 +366,11 @@ void Server::runServer()
 	{
 		int fdPerform = poll(_polling.data(), _polling.size(), 1000);
 		if (fdPerform < 0)
+		{
+			if (errno == EINTR)
+				continue;
 			sysError(ERR_POLL);
+		}
 		if (fdPerform == 0)
 		{	
 			// timeOut();

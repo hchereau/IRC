@@ -85,7 +85,7 @@ class Server {
 	// Clients management
 	// void    addClient(int fd, std::string hostname); <- didnt make a separate function
 	// void    removeClient(int fd); <- using delClients
-	std::string getPassword(void);
+	const std::string& getPassword(void) const;
 	Client* getClientByFd(int fd);
 	Client* getClientByNick(const std::string& name);
 

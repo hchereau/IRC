@@ -181,14 +181,6 @@ void Server::sendServ(int fd, int *i)
 	}
 }
 
-// verify client registration and reply
-
-// error reply : 기존 오류 자리들에 보충하기
-// prv msg 수신자 없음, channel msg 채널 없음, join 채널 없으면 생성or error 초대 필요, 키 틀림
-// nick 이미 존재시 에러
-// regi 등록되어있지 않으며.. 
-// client write buffer 로
-
 // execution logics and uses, on the server class
 void Server::privateMsg(const std::string& targNick, const std::string& msg)
 {
@@ -417,6 +409,42 @@ void sigSet(void)
     std::signal(SIGPIPE, SIG_IGN);
 }
 
+// void Server::debug_runServer(int flag)
+// {
+// 	if (flag == 1)
+// 	{
+// 		std::cout << "this is server fd: " << _fdSocket << std::endl;
+// 		std::cout << "all the _polling 'fd' inc server fd on [0]: " << std::endl;
+// 		std::vector<struct pollfd>::iterator it = _polling.begin();
+// 		int idx = 0;
+// 		while (it != _polling.end())
+// 		{
+// 			std::cout << "fd idx: " << idx << ": " << it->fd << std::endl;
+// 			++it;
+// 			++idx;
+// 		}
+// 	}
+// 	if (flag == 2)
+// 	{
+// 		std::cout << "all the _polling 'revent flag' inc server on [0]: " << std::endl;
+// 		std::vector<struct pollfd>::iterator it = _polling.begin();
+// 		int idx = 0;
+// 		while (it != _polling.end())
+// 		{
+// 			std::string revent_flag;
+// 			if (it->revents == POLLIN)
+// 				revent_flag = "POLLIN";
+// 			if (it->revents == POLLOUT)
+// 				revent_flag = "POLLOUT";
+// 			if (it->revents == POLLHUP)
+// 				revent_flag = "POLLHUP";
+// 			std::cout << "revent idx: " << idx << ": " << revent_flag << std::endl;
+// 			++it;
+// 			++idx;
+// 		}
+// 	}
+// }
+
 void Server::runServer()
 {
 	while (!sigFlag)
@@ -429,10 +457,7 @@ void Server::runServer()
 			sysError(ERR_POLL);
 		}
 		if (fdPerform == 0)
-		{	
-			// timeOut();
 			continue ;
-		}
 		if (_polling[0].revents & POLLIN) // revents is bitmask so &
 			updPoll();
 		int i = 1;

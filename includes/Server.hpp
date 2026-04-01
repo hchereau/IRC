@@ -96,6 +96,7 @@ class Server {
 
 	// debug
 	// void	debug_delInChannel();
+	void Server::debug_runServer(int flag);
 };
 
 #endif

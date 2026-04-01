@@ -253,32 +253,32 @@ Client* Server::getClientByNick(const std::string& nickname)
 
 // to debug, dont forget to earase 
 
-void Server::debug_delInChannel()
-{
-	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
-	ch_it = _channels.begin();
-	int i = 0;
-	while (ch_it != _channels.end())
-	{
-		std::cout << "channel name: " << ch_it->first << std::endl;
+// void Server::debug_delInChannel()
+// {
+// 	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
+// 	ch_it = _channels.begin();
+// 	int i = 0;
+// 	while (ch_it != _channels.end())
+// 	{
+// 		std::cout << "channel name: " << ch_it->first << std::endl;
 
-		std::vector<Client*> clients = ch_it->second->getMembers();
-		std::vector<Client*>::iterator it = clients.begin();
-		while (it != clients.end())
-		{
-			const int fd = (*it)->getFd();
-			std::cout << "Channel has these fds: " << fd << std::endl;
-			++it;
-		}
-		++ch_it;
-		++i;
-	}
-	std::cout << "theres " << i << " numbers of channels" << std::endl;
-}
+// 		std::vector<Client*> clients = ch_it->second->getMembers();
+// 		std::vector<Client*>::iterator it = clients.begin();
+// 		while (it != clients.end())
+// 		{
+// 			const int fd = (*it)->getFd();
+// 			std::cout << "Channel has these fds: " << fd << std::endl;
+// 			++it;
+// 		}
+// 		++ch_it;
+// 		++i;
+// 	}
+// 	std::cout << "theres " << i << " numbers of channels" << std::endl;
+// }
 
 void Server::delInChannel(void)
 {
-	debug_delInChannel();
+	// debug_delInChannel();
 	// first find and remove the matching clinet(s) using todelFds, on each channels  
 	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
 	while (ch_it != _channels.end())
@@ -310,7 +310,7 @@ void Server::delInChannel(void)
 		else
 		++ch_it;
 	}
-	debug_delInChannel();
+	// debug_delInChannel();
 }
 
 void Server::delClients(void)

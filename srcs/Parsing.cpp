@@ -32,7 +32,8 @@ Message	Parsing::parseLine(const std::string& line)
 	size_t max = 510;
 
 	if (!line.size())
-		throw	std::invalid_argument("Line couldn't be read");
+		return Message();
+
 	std::string	cpy = line;
 
 	if (cpy.size() > 510) // enlever les \r\n avant ou les inclure après le erase ?

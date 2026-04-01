@@ -25,6 +25,13 @@ int main(int argc, char **argv)
 	tests.push_back("QUIT :bye");
 	tests.push_back("QUIT :     you should    keep the    spaces       ");
 	tests.push_back("quit :bye");
+	// cas limites
+	tests.push_back("");
+	tests.push_back("         ");
+	tests.push_back("PRIVMSG #chan :hello :world");
+	tests.push_back("PRIVMSG #chan :");
+	tests.push_back(":nick!user@host PRIVMSG #chan :hello");
+	
 
 	for (size_t i = 0; i < tests.size(); i++)
 	{

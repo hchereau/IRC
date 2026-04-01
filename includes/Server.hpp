@@ -56,12 +56,13 @@ class Server {
 	std::set<int> _todelFds;
 	std::map<std::string, Channel*> _channels;
 
-	// void timeOut(void);
 	void updPoll(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
+	void regiReply(Client* client);
+	void errReply(Client* client);
 	void privateMsg(const std::string& targetNick, const std::string& msg);
-	void channelMsg(const std::string& msg);
+	void channelMsg(const std::string& name, Client* sender, const std::string& msg);
 	void broadCastAll(const std::string& msg, int notThisFd);
 	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);

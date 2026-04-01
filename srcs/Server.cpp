@@ -181,6 +181,14 @@ void Server::sendServ(int fd, int *i)
 	}
 }
 
+// verify client registration and reply
+
+// error reply : 기존 오류 자리들에 보충하기
+// prv msg 수신자 없음, channel msg 채널 없음, join 채널 없으면 생성or error 초대 필요, 키 틀림
+// nick 이미 존재시 에러
+// regi 등록되어있지 않으며.. 
+// client write buffer 로
+
 // execution logics and uses, on the server class
 void Server::privateMsg(const std::string& targNick, const std::string& msg)
 {
@@ -193,7 +201,7 @@ void Server::privateMsg(const std::string& targNick, const std::string& msg)
 
 void Server::channelMsg(const std::string& name, Client* sender, const std::string& msg)
 {
-	Channel* thisChannel = getChannelByname(name);
+	Channel* thisChannel = getChannelByName(name);
 	if (!thisChannel)
 		return ;
 	thisChannel->broadcastMessage(msg, sender);
@@ -254,7 +262,7 @@ void Server::delClients(void)
 			++p_it;
 	}
 	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
-	while (ch_it != _Channels.end())
+	while (ch_it != _channels.end())
 	{
 		Channel* channel = ch_it->second;
 		channel->removeClient(client);

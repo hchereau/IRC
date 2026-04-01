@@ -94,6 +94,8 @@ class Server {
 	void    removeChannel(const std::string& name);
 	Channel* getChannelByName(const std::string& name);
 
+	// debug
+	void	debug_delInChannel();
 };
 
 #endif

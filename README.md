@@ -11,7 +11,7 @@ brief overview.
 
 ## 📚 Informations to know
 
-Messages structure : Format : <prefix> <command> <params> \r\n (max 512 octets)
+Messages structure : Format :<prefix> <command> <params> \r\n (max 512 octets)
 	up to three main parts: the prefix (OPTIONAL), 
 	the command, and the command parameters (maximum of 15).
 	presence of a prefix indicated with ':' = first char of the message

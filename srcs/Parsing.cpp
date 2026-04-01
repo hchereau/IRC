@@ -41,7 +41,7 @@ Message	Parsing::parseLine(const std::string& line)
 		msg.prefix = extractPrefix(cpy);
 	if (!cpy.empty())
 		msg.cmd = extractCmd(cpy);
-	if (!cpy.empty() && cpy.find(':'))
+	if (!cpy.empty() && cpy.find(':') != std::string::npos)
 		msg.trailing = extractTrailing(cpy);
 	if (!cpy.empty())
 		msg.params = extractParams(cpy);
@@ -79,7 +79,7 @@ std::string Parsing::extractCmd(std::string& line)
 	}
 	else
 	{
-		cmd = line.substr(0, spacePos - start);
+		cmd = line.substr(start, spacePos - start);
 		line.erase(0, spacePos + 1);
 	}
 	for (size_t i = 0; i < cmd.size(); i++)

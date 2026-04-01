@@ -9,7 +9,7 @@ SRC_DIR			=
 OBJ_DIR			=	obj/
 DEP_DIR			=	$(OBJ_DIR)
 
-SRC_FILES		=	main_parsing.cpp Parsing.cpp
+SRC_FILES		=	main_parsing.cpp Parsing.cpp Executor.cpp CommandValidator.cpp Replies.cpp Client.cpp
 
 SRC				=	$(SRC_FILES)
 OBJS			=	$(addprefix $(OBJ_DIR), $(SRC_FILES:.cpp=.o))

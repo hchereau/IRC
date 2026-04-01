@@ -27,12 +27,14 @@ class Client {
 		const std::string& 	getRealname() const;
 		const std::string& 	getHostname() const;
 		RegistrationState	getState() const;
+		bool isToDisconnect() const;
 
 	//setters
 		void	setNickname(const std::string& nick);
 		void	setUsername(const std::string& user);
 		void	setRealname(const std::string& real);
 		void	setState(RegistrationState state);
+		void 	setToDisconnect(bool status);
 
 	//buffer management
 		void	appendToReadBuffer(const std::string& data);
@@ -41,7 +43,7 @@ class Client {
 		std::string	extractMessage();
 		
 		std::string& getWriteBuffer();
-		void		clearWriteBuffer();
+		void clearSentBytes(size_t sentBytes);
 
 	private:
 		Client();
@@ -58,4 +60,6 @@ class Client {
 		std::string			_Nickname;
 		std::string			_Username;
 		std::string			_Realname;
+
+		bool _toDisconnect;
 };

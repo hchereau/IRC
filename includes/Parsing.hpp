@@ -7,12 +7,11 @@
 # include <exception>
 # include <cctype>
 
-// struc ou direct l'implementer dans la classe parsing ? 
 struct Message {
-    std::string prefix; // not always, if ":" present
-    std::string cmd;
-    std::vector<std::string> params;
-    std::string trailing; // message, starts with ":"
+	std::string prefix;
+	std::string cmd;
+	std::vector<std::string> params;
+	std::string trailing;
 };
 
 class Parsing

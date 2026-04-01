@@ -94,19 +94,10 @@ std::string Parsing::extractTrailing(std::string& line)
 	size_t end = line.size();
 	size_t start = line.find(':');
 
-	//std::cout << "line is : " << line << std::endl; // debug
-	//std::cout << "end is : " << end << std::endl; // debug
-	
 	while (end > 0 && line[end - 1] == ' ')
 		end--;
 	trailing = line.substr(start + 1, end - (start + 1));
-
-	//std::cout << "end is : " << end << std::endl; // debug
-	//std::cout << "trailing is : " << trailing << std::endl;
-
 	line.erase(start, end - start);
-
-	//std::cout << "line is : " << line << std::endl; // debug
 	return (trailing);
 }
 

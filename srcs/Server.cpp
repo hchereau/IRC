@@ -49,7 +49,7 @@ void Server::removeChannel(const std::string& name)
 	// 채널 목록에서 없애구, 채널 delete dealloc 관리하기
 }
 
-void Server::updPoll(void)
+void Server::acceptNewClient(void)
 {
 	struct sockaddr_in clientAddr; // 누가 접속할지 모르니 os 가 accept 할 때 채워줌
 	std::memset(&clientAddr, 0, sizeof(clientAddr));
@@ -268,6 +268,18 @@ Client* Server::getClientByNick(const std::string& nickname)
 // 	std::cout << "theres " << i << " numbers of channels" << std::endl;
 // }
 
+void Server::delInPolling(void)
+{
+	std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
+	while (it != _polling.end())
+	{
+		if (_todelFds.find(it->fd) != _todelFds.end()) // is this fd inside of _todelFds
+			it = _polling.erase(it);
+		else
+			++it;
+	}
+}
+
 void Server::delInChannel(void)
 {
 	// debug_delInChannel();
@@ -293,10 +305,10 @@ void Server::delInChannel(void)
 	ch_it = _channels.begin();
 	while (ch_it != _channels.end())
 	{
-		Channel* em_channel = ch_it->second;
-		if (em_channel->isEmpty()) // this channel is empty after deleting the clients on _todelFds
+		Channel* emp_channel = ch_it->second;
+		if (emp_channel->isEmpty()) // this channel is empty after deleting the clients on _todelFds
 		{
-			delete em_channel;
+			delete emp_channel;
 			_channels.erase(ch_it++);
 		}
 		else
@@ -307,27 +319,25 @@ void Server::delInChannel(void)
 
 void Server::delClients(void)
 {
-	std::vector<struct pollfd>::iterator p_it = _polling.begin() + 1;
-	while (p_it != _polling.end())
+	std::set<int>::iterator it = _todelFds.begin();
+	while (it != _todelFds.end())
 	{
-		if (_todelFds.find(p_it->fd) != _todelFds.end()) // is this fd inside of _todelFds
-			p_it = _polling.erase(p_it);
-		else
-			++p_it;
-	}
-	delInChannel();
-	std::set<int>::iterator c_it = _todelFds.begin();
-	while (c_it != _todelFds.end())
-	{
-		int fd = *c_it;
+		int fd = *it;
 		if (_clients.find(fd) != _clients.end())
 		{
 			delete(_clients[fd]);
 			_clients.erase(fd);
 			close(fd);
 		}
-		++c_it;
+		++it;
 	}
+}
+
+void Server::disconnectClients(void)
+{
+	delInPolling();
+	delInChannel();
+	delInClients();
 	_todelFds.clear();
 }
 
@@ -459,7 +469,7 @@ void Server::runServer()
 		if (fdPerform == 0)
 			continue ;
 		if (_polling[0].revents & POLLIN) // revents is bitmask so &
-			updPoll();
+			acceptNewClient();
 		int i = 1;
 		std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
 		while (it != _polling.end())
@@ -485,6 +495,8 @@ void Server::runServer()
 	cleanDown();
 }
 
+// a revoir pour une execution plus coherente en utilisant le flag de la part exec et
+// gerer ses flag de struct pollfd dans la partie server
 void Server::setPolling(int fd, int flag)
 {
 	// caller to put flag or i can divide with more evident name for each case

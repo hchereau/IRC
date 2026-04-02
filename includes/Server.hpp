@@ -19,10 +19,11 @@
 #include <unistd.h>
 #include <stdio.h> // debug printf
 #include <csignal>
-#include <atomic>
 
-#define MAX_READ_BUFF 9999 // need to think of the exact value
+#define MAX_READ_BUFF 8192 // need to think of the exact value
 #define MAX_ONE_MESSAGE 512
+
+externe volatile std::sig_atomic_t sigFlag;
 
 typedef enum s_syserror
 {
@@ -56,14 +57,16 @@ class Server {
 	std::set<int> _todelFds;
 	std::map<std::string, Channel*> _channels;
 
-	void updPoll(void); // _pollFds and _clients
+	void acceptNewClient(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);
 	void sendServ(int fd, int *i);
 	void privateMsg(const std::string& targetNick, const std::string& msg);
 	void channelMsg(const std::string& name, Client* sender, const std::string& msg);
 	void broadCastAll(const std::string& msg, int notThisFd);
+	void delInPolling(void);
 	void delInChannel(void);
-	void delClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
+	void delInClients(void);
+	void disconnectClients(void); // remove _todelFds in _pollFds / _clients / if needed do close(fd)
 	void sysError(int sys_enum);
 	void cleanDown(); // when sig(global variable) catched while run server loop etc
 
@@ -96,7 +99,7 @@ class Server {
 
 	// debug
 	// void	debug_delInChannel();
-	void Server::debug_runServer(int flag);
+	// void Server::debug_runServer(int flag);
 };
 
 #endif

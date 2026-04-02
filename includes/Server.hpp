@@ -36,12 +36,6 @@ typedef enum s_syserror
 	FAIL = -1
 } t_syserror;
 
-typedef enum s_eventflag
-{
-	set_POLLIN,
-	set_POLLOUT,
-} t_eventflag;
-
 class Server {
 
 	private:
@@ -78,13 +72,15 @@ class Server {
 	void confServer(void);
 	void runServer(void);
 
-	void setPolling(int fd, int flag);
-	int  isDis(int fd);
+	// set pollfd events POLLOUT when writebuffer is not empty
+	void setPolling(void);
 
+	// getter
 	std::map<int, Client*> getClients(void) const;
 	const std::map<int, Client*>& congetC(void) const;
 
 	// Clients management
+	int  isDis(int fd);
 	const std::string& getPassword(void) const;
 	Client* getClientByFd(int fd);
 	Client* getClientByNick(const std::string& name);

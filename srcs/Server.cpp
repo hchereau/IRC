@@ -175,8 +175,6 @@ void Server::sendServ(int fd, int *i)
 			_todelFds.insert(_polling[*i].fd);
 			break ;
 		}
-		if (ret == wbuff.size())
-			setPolling(fd, set_POLLIN);
 		wbuff.erase(0, ret);
 	}
 }
@@ -188,7 +186,6 @@ void Server::privateMsg(const std::string& targNick, const std::string& msg)
 	if (!targ)
 		return ; // need to check the protocol
 	targ->appendToWriteBuffer(msg);
-	setPolling(targ->getFd(), set_POLLOUT);
 }
 
 void Server::channelMsg(const std::string& name, Client* sender, const std::string& msg)
@@ -197,13 +194,6 @@ void Server::channelMsg(const std::string& name, Client* sender, const std::stri
 	if (!thisChannel)
 		return ;
 	thisChannel->broadcastMessage(msg, sender);
-
-	const std::vector<Client*>& members = thisChannel->getMembers();
-	for (std::vector<Client*>::const_iterator it = members.begin(); it != members.end(); ++it)
-	{
-		if (*it != sender)
-			setPolling((*it)->getFd(), set_POLLOUT);
-	}
 }
 
 // server broadCast
@@ -215,7 +205,6 @@ void Server::broadCastAll(const std::string& msg, int notThisFd)
 		if (it->first == notThisFd)
 			continue;
 		it->second->appendToWriteBuffer(msg);
-		setPolling(it->second->getFd(), set_POLLOUT);
 	}
 }
 
@@ -317,7 +306,7 @@ void Server::delInChannel(void)
 	// debug_delInChannel();
 }
 
-void Server::delClients(void)
+void Server::delInClients(void)
 {
 	std::set<int>::iterator it = _todelFds.begin();
 	while (it != _todelFds.end())
@@ -459,12 +448,13 @@ void Server::runServer()
 {
 	while (!sigFlag)
 	{
+		setPolling();
 		int fdPerform = poll(_polling.data(), _polling.size(), 1000);
 		if (fdPerform < 0)
 		{
 			if (errno == EINTR)
 				continue;
-			else if (errno == EAGAIN || errno == ENOMEM)
+			else if (errno == EAGAIN || errno == ENOMEM) // EAGAIN diff from recv and send
 			{	
 				std::cerr << "Error_systemcall: " << "poll " << strerror(errno);
 				continue;
@@ -484,7 +474,7 @@ void Server::runServer()
 				_todelFds.insert(_polling[i].fd);
 			else
 			{
-				if (_polling[i].revents & POLLIN)
+				if (_polling[i].revents & POLLIN) // revents bitmask so can be several cases at the same time, so if not else if
 					recvServ(_polling[i].fd , &i);
 				if ((_polling[i].revents & POLLOUT) && _todelFds.find(_polling[i].fd) == _todelFds.end())
 					sendServ(_polling[i].fd, &i);
@@ -500,19 +490,17 @@ void Server::runServer()
 	cleanDown();
 }
 
-// a revoir pour une execution plus coherente en utilisant le flag de la part exec et
-// gerer ses flag de struct pollfd dans la partie server
-void Server::setPolling(int fd, int flag)
+void Server::setPolling(void)
 {
-	// caller to put flag or i can divide with more evident name for each case
 	for (std::vector<struct pollfd>::iterator it = _polling.begin() + 1; it != _polling.end(); ++it)
 	{
-        if (it->fd == fd)
-        {
-            if (flag == set_POLLIN)
-			    it->events |= POLLIN;
-            else if (flag == set_POLLOUT)
-			    it->events |= POLLOUT;
-        }
-    }
+		it->events &= ~POLLOUT; // init en enlevant bitmask POLLOUT qu'il avait
+		std::map<int, Client*>::iterator c_it = _clients.find(it->fd);
+		if (c_it != _clients.end())
+		{
+			Client* client = c_it->second;
+			if (!(client->getWriteBuffer().empty()))
+				it->events |= POLLOUT;
+		}
+	}
 }

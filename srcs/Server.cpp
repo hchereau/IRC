@@ -464,7 +464,13 @@ void Server::runServer()
 		{
 			if (errno == EINTR)
 				continue;
-			sysError(ERR_POLL);
+			if (errno == EAGAIN || errno == ENOMEM)
+			{	
+				std::cerr << "Error_systemcall: " << "poll " << strerror(errno);
+				continue;
+			}
+			else // EFAULT EINVAL EIO
+				sysError(ERR_POLL);
 		}
 		if (fdPerform == 0)
 			continue ;
@@ -478,18 +484,18 @@ void Server::runServer()
 			{
 				recvServ(_polling[i].fd , &i);
 			}
-			else if (_polling[i].revents & POLLOUT)
+			if (_polling[i].revents & POLLOUT)
 			{
 				sendServ(_polling[i].fd, &i);
 			}
-			else if (_polling[i].revents & POLLHUP)
+			if (_polling[i].revents & POLLHUP)
 			{
 				_todelFds.insert(_polling[i].fd);
 			}
 			++it;
 			++i;
 		}
-		delClients();
+		disconnectClients();
 	}
 	// signal occured or quit kind of ?
 	cleanDown();

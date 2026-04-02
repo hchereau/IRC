@@ -464,7 +464,7 @@ void Server::runServer()
 		{
 			if (errno == EINTR)
 				continue;
-			if (errno == EAGAIN || errno == ENOMEM)
+			else if (errno == EAGAIN || errno == ENOMEM)
 			{	
 				std::cerr << "Error_systemcall: " << "poll " << strerror(errno);
 				continue;
@@ -480,17 +480,16 @@ void Server::runServer()
 		std::vector<struct pollfd>::iterator it = _polling.begin() + 1;
 		while (it != _polling.end())
 		{
-			if (_polling[i].revents & POLLIN)
-			{
-				recvServ(_polling[i].fd , &i);
-			}
-			if (_polling[i].revents & POLLOUT)
-			{
-				sendServ(_polling[i].fd, &i);
-			}
-			if (_polling[i].revents & POLLHUP)
-			{
+			if (_polling[i].revents & POLLNVAL || _polling[i].revents & POLLERR)
 				_todelFds.insert(_polling[i].fd);
+			else
+			{
+				if (_polling[i].revents & POLLIN)
+					recvServ(_polling[i].fd , &i);
+				if ((_polling[i].revents & POLLOUT) && _todelFds.find(_polling[i].fd) == _todelFds.end())
+					sendServ(_polling[i].fd, &i);
+				if (_polling[i].revents & POLLHUP)
+					_todelFds.insert(_polling[i].fd);
 			}
 			++it;
 			++i;
@@ -511,11 +510,9 @@ void Server::setPolling(int fd, int flag)
         if (it->fd == fd)
         {
             if (flag == set_POLLIN)
-			    it->events = POLLIN;
+			    it->events |= POLLIN;
             else if (flag == set_POLLOUT)
-			    it->events = POLLOUT;
-            else if (flag == set_POLLHUP)
-                it->events = POLLHUP;
+			    it->events |= POLLOUT;
         }
     }
 }

@@ -40,7 +40,6 @@ typedef enum s_eventflag
 {
 	set_POLLIN,
 	set_POLLOUT,
-	set_POLLHUP
 } t_eventflag;
 
 class Server {

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
 	while (!(line = client.extractMessage()).empty())
 	{
-	    Message msg = parser.parseLine(line);
+		Message msg = parser.parseLine(line);
 
 		if (msg.prefix != "")
 				std::cout << "Prefix: " << msg.prefix << std::endl;	
@@ -35,22 +35,22 @@ int main(int argc, char **argv)
 		if (msg.trailing != "")
 			std::cout << "Trailing: " << msg.trailing << std::endl;
 
-	    executor.dispatchMessage(&client, msg); // mettre (void)_server; à dispatchMessage pour tester si ca compile // needs to test w Server
+		executor.dispatchMessage(&client, msg); // mettre (void)_server; à dispatchMessage pour tester si ca compile // needs to test w Server
 	}
 }
 
 // TESTS 
 
 //"NICK toto");
-//"     USER toto 0 #channel1 :Toto User");
+//"	 USER toto 0 #channel1 :Toto User");
 //":prefix JOIN #42");
 //"PRIVMSG #42 :hello world");
 //"QUIT :bye");
-//"QUIT :     you should    keep the    spaces       ");
+//"QUIT :    you should	keep the      spaces        ");
 //"quit :bye");
 	// cas limites
 //""
-//"         "
+//"      "
 //"PRIVMSG #chan :hello :world"
 //"PRIVMSG #chan :"
 //":nick!user@host PRIVMSG #chan :hello"

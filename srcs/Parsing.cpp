@@ -25,40 +25,6 @@ Parsing::~Parsing()
 
 /*================== METHODS ==================*/
 
-// Message	Parsing::parseLine(const std::string& line)
-// {
-// 	if (!line.size())
-// 		return Message();
-
-// 	Message		msg;
-// 	size_t end = line.size() - 1;
-// 	size_t max = 510;
-
-// 	std::string	cpy = line;
-
-// 	if (cpy.size() > 510)
-// 		cpy.erase(max, end - max);
-// 	if (!cpy.empty() && cpy[0] == ':')
-// 		msg.prefix = extractPrefix(cpy);
-// 	if (!cpy.empty())
-// 		msg.cmd = extractCmd(cpy);
-	
-// 	// if (!cpy.empty() && cpy.find(':') != std::string::npos)
-// 	// 	msg.trailing = extractTrailing(cpy);
-
-// 	// fix bug with param who contain :
-// 	size_t trailingPos = cpy.find(" :");
-// 	if (trailingPos != std::string::npos)
-//     {
-//         msg.trailing = cpy.substr(trailingPos + 2);
-//         cpy.erase(trailingPos);
-//     }
-
-// 	if (!cpy.empty())
-// 		msg.params = extractParams(cpy);
-// 	return (msg);
-// }
-
 Message Parsing::parseLine(const std::string& line)
 {
     if (!line.size())
@@ -129,19 +95,6 @@ std::string Parsing::extractCmd(std::string& line)
 		cmd[i] = std::toupper(cmd[i]); 
 	return (cmd);
 }
-
-// std::string Parsing::extractTrailing(std::string& line)
-// {
-// 	std::string		trailing;
-// 	size_t end = line.size();
-// 	size_t start = line.find(':');
-
-// 	while (end > 0 && line[end - 1] == ' ')
-// 		end--;
-// 	trailing = line.substr(start + 1, end - (start + 1));
-// 	line.erase(start, end - start);
-// 	return (trailing);
-// }
 
 std::vector<std::string> Parsing::extractParams(std::string& line)
 {

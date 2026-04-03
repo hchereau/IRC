@@ -36,7 +36,7 @@ Message	Parsing::parseLine(const std::string& line)
 
 	std::string	cpy = line;
 
-	if (cpy.size() > 510) // enlever les \r\n avant ou les inclure après le erase ?
+	if (cpy.size() > 510)
 		cpy.erase(max, end - max);
 	if (!cpy.empty() && cpy[0] == ':')
 		msg.prefix = extractPrefix(cpy);

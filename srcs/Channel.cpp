@@ -88,3 +88,7 @@ void Channel::broadcastMessage(const std::string& message, Client* sender) {
         }
     }
 }
+
+bool Channel::isEmpty() const {
+    return _members.empty();
+}

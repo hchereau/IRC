@@ -23,7 +23,7 @@ class Channel {
 		bool isMember(Client* client) const;
 	
 	//need on server -------
-		bool isEmpty(); 
+		bool isEmpty() const; 
 	// a function that checks if theres no members in it
 	// i can delete the channel pointer and channel inside of _channels    
 

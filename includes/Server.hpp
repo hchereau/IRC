@@ -3,6 +3,8 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Parsing.hpp"
+#include "Executor.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
@@ -53,6 +55,9 @@ class Server {
 	std::vector<struct pollfd> _polling;
 	std::set<int> _todelFds;
 	std::map<std::string, Channel*> _channels;
+
+	Parsing _parser;
+	Executor _executor;
 
 	void acceptNewClient(void); // _pollFds and _clients
 	void recvServ(int fd, int *i);

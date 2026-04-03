@@ -84,6 +84,10 @@ std::string& Client::getWriteBuffer() {
     return _writeBuffer;
 }
 
+std::string& Client::getReadBuffer() {
+    return _readBuffer;
+}
+
 void Client::clearSentBytes(size_t sentBytes) {
     if (sentBytes <= _writeBuffer.length()) {
         _writeBuffer.erase(0, sentBytes);

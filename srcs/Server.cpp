@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Replies.hpp"
+#include <stdexcept>
 
 volatile std::sig_atomic_t sigFlag = 0;
 
@@ -13,7 +14,7 @@ Server::Server(int port, std::string password)
 
 Server::~Server()
 {
-
+	cleanDown();
 }
 
 Channel* Server::getOrCreateChannel(const std::string& name)
@@ -338,11 +339,12 @@ void Server::disconnectClients(void)
 void Server::sysError(int sys_enum)
 {
 	std::string errors[ERR_count] = {"socket", "bind", "listen", "accept", "poll"};
-	std::cerr << "Error_systemcall: " << errors[sys_enum] << " " << strerror(errno) << std::endl;
-	if (sys_enum == ERR_ACCEPT)
-		return ;
-	cleanDown();
-	// exit(1);
+	std::string errMsg = "Error_systemcall: " + errors[sys_enum] + " " + strerror(errno);
+	if (sys_enum == ERR_ACCEPT) {
+	        std::cerr << errMsg << std::endl;
+	        return ; // accept error isn't fatal
+	    }
+	    throw std::runtime_error(errMsg);
 }
 
 void Server::deleteAllChannels(void)
@@ -516,7 +518,7 @@ void Server::runServer()
 		disconnectClients();
 	}
 	// signal occured or quit kind of ?
-	cleanDown();
+	//cleanDown();
 }
 
 void Server::setPolling(void)

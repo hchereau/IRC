@@ -16,14 +16,16 @@ SRCS        := srcs/Client.cpp \
                srcs/Channel.cpp \
 			   srcs/CommandValidator.cpp \
 			   srcs/Replies.cpp \
-			   srcs/Executor.cpp
+			   srcs/Executor.cpp \
+			   srcs/Parsing.cpp
 
 TEST_SRCS   := test/main_test.cpp \
                test/test_client.cpp \
                test/test_channel.cpp \
                test/utils_tests.cpp \
 			   test/test_validator.cpp \
-			   test/test_Dispatcher.cpp
+			   test/test_Dispatcher.cpp \
+			   test/test_parsing.cpp
 
 ### OBJECTS & DEPS #############################################################
 

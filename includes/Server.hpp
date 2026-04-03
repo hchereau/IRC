@@ -23,7 +23,7 @@
 #define MAX_READ_BUFF 8192 // need to think of the exact value
 #define MAX_ONE_MESSAGE 512
 
-externe volatile std::sig_atomic_t sigFlag;
+extern volatile std::sig_atomic_t sigFlag;
 
 typedef enum s_syserror
 {
@@ -39,6 +39,10 @@ typedef enum s_syserror
 class Server {
 
 	private:
+
+	void deleteAllChannels(void);
+    void deleteAllClients(void);
+    void closeServerSocket(void);
 
 	int	_port;
 	std::string _password;

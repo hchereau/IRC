@@ -1,6 +1,7 @@
 
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Replies.hpp"
 
 volatile std::sig_atomic_t sigFlag = 0;
 
@@ -337,27 +338,48 @@ void Server::sysError(int sys_enum)
 	if (sys_enum == ERR_ACCEPT)
 		return ;
 	cleanDown();
-	exit(1);
+	// exit(1);
 }
 
-void Server::cleanDown()
+void Server::deleteAllChannels(void)
 {
-	std::map<std::string, Channel*>::iterator it = _channels.begin();
-	for (; it != _channels.end(); ++it)
-	{
-		delete(it->second);
-	}
-	_channels.clear();
-	std::map<int, Client*>::iterator c_it = _clients.begin();
-	for (; c_it != _clients.end(); ++c_it)
-	{
-		delete(c_it->second);
-		close(c_it->first);
-	}
-	_clients.clear(); // need to verify with client destructor
-	if (_fdSocket >= 0)
-		close (_fdSocket);
-	_fdSocket = -1;
+    std::map<std::string, Channel*>::iterator it = _channels.begin();
+    for (; it != _channels.end(); ++it)
+    {
+        delete it->second;
+    }
+    _channels.clear();
+}
+
+void Server::deleteAllClients(void)
+{
+    std::map<int, Client*>::iterator it = _clients.begin();
+    for (; it != _clients.end(); ++it)
+    {
+		// add com with Reply class 
+        delete it->second;
+        close(it->first);
+    }
+    _clients.clear();
+}
+
+void Server::closeServerSocket(void)
+{
+    if (_fdSocket >= 0)
+    {
+        close(_fdSocket);
+        _fdSocket = -1;
+    }
+}
+
+void Server::cleanDown(void)
+{
+    deleteAllChannels();
+    deleteAllClients();
+    closeServerSocket();
+    
+    _polling.clear();
+    _todelFds.clear();
 }
 
 void Server::confServer()

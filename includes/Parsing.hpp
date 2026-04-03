@@ -1,5 +1,5 @@
-#ifndef MESSAGE_HPP
-#define MESSAGE_HPP
+#ifndef PARSING_HPP
+# define PARSING_HPP
 
 # include <vector>
 # include <iostream>

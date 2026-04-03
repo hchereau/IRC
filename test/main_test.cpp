@@ -10,6 +10,7 @@ int main() {
     runChannelTests();
     runValidationTest();
     testDispatcherOnly();
+    runParsingTests();
 
     std::cout << "\n=== All tests completed ===" << std::endl;
     return 0;

@@ -14,11 +14,18 @@ class Channel {
 		const std::string& getName() const;
 		const std::string& getTopic() const;
 		void setTopic(const std::string& topic);
+		const std::vector<Client*>& getMembers() const; // added for server channel msg
+
 
 	//Client management
 		void addClient(Client* client);
 		void removeClient(Client* client);
 		bool isMember(Client* client) const;
+	
+	//need on server -------
+		bool isEmpty() const; 
+	// a function that checks if theres no members in it
+	// i can delete the channel pointer and channel inside of _channels    
 
 
 	//operators

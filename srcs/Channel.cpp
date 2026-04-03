@@ -40,6 +40,11 @@ bool Channel::isMember(Client* client) const {
     return std::find(_members.begin(), _members.end(), client) != _members.end();
 }
 
+const std::vector<Client*>& Channel::getMembers() const
+{
+    return _members;
+}
+
 
 // operators
 void Channel::addOperator(Client* client) {
@@ -82,4 +87,8 @@ void Channel::broadcastMessage(const std::string& message, Client* sender) {
             (*it)->appendToWriteBuffer(message);
         }
     }
+}
+
+bool Channel::isEmpty() const {
+    return _members.empty();
 }

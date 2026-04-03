@@ -28,6 +28,7 @@ class Client {
 		const std::string& 	getHostname() const;
 		RegistrationState	getState() const;
 		bool isToDisconnect() const;
+		std::string& getReadBuffer();
 
 	//setters
 		void	setNickname(const std::string& nick);

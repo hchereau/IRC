@@ -4,7 +4,7 @@ TEST_NAME   := irc_tests
 ### COMPILATION ################################################################
 
 COMPILATION := c++
-CPPFLAGS    := -Wall -Wextra -Werror -std=c++98
+CPPFLAGS    := -Wall -Wextra -Werror -std=c++98 -g3
 DEPFLAGS    := -MMD -MP 
 INCLUDES    := -I includes -I test
 
@@ -17,7 +17,9 @@ SRCS        := srcs/Client.cpp \
 			   srcs/CommandValidator.cpp \
 			   srcs/Replies.cpp \
 			   srcs/Executor.cpp \
-			   srcs/Parsing.cpp
+			   srcs/Parsing.cpp \
+			   srcs/Server.cpp \
+			   srcs/main.cpp
 
 TEST_SRCS   := test/main_test.cpp \
                test/test_client.cpp \

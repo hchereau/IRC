@@ -510,6 +510,18 @@ void Server::runServer()
 				if (_polling[i].revents & POLLHUP)
 					_todelFds.insert(_polling[i].fd);
 			}
+			
+			std::map<int, Client*>::iterator client_it = _clients.find(_polling[i].fd);
+			if (client_it != _clients.end())
+			{
+				Client* client = client_it->second;
+				if (client->isToDisconnect() == true && client->getWriteBuffer().empty())
+				{
+					_todelFds.insert(_polling[i].fd);
+				}
+			}
+
+
 			++it;
 			++i;
 		}

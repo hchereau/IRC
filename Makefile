@@ -21,13 +21,13 @@ SRCS        := srcs/Client.cpp \
 			   srcs/Server.cpp \
 			   srcs/main.cpp
 
-TEST_SRCS   := test/main_test.cpp \
-               test/test_client.cpp \
-               test/test_channel.cpp \
-               test/utils_tests.cpp \
-			   test/test_validator.cpp \
-			   test/test_Dispatcher.cpp \
-			   test/test_parsing.cpp
+TEST_SRCS   := test/method_tests/main_test.cpp \
+               test/method_tests/test_client.cpp \
+               test/method_tests/test_channel.cpp \
+               test/method_tests/utils_tests.cpp \
+			   test/method_tests/test_validator.cpp \
+			   test/method_tests/test_Dispatcher.cpp \
+			   test/method_tests/test_parsing.cpp
 
 ### OBJECTS & DEPS #############################################################
 
@@ -51,6 +51,23 @@ $(NAME): $(OBJS)
 test: $(TEST_OBJS) $(TEST_SRV_OBJS)
 	$(COMPILATION) $(CPPFLAGS) $^ -o $(TEST_NAME) $(INCLUDES)
 	@echo "\n\033[32m[OK] Binaire de test prêt : ./$(TEST_NAME)\033[0m\n"
+
+test_integration: all
+	@echo "\033[36m--- Démarrage du serveur IRC en arrière-plan ---\033[0m"
+	@./$(NAME) 6667 testpass & echo $$! > server.pid
+	@sleep 1
+	@echo "\033[36m--- Exécution des tests Python (Custom Runner) ---\033[0m\n"
+	@python3 test/commands_tests/run_integration.py ; \
+	RESULT=$$?; \
+	echo "\n\033[36m--- Arrêt du serveur IRC ---\033[0m" ; \
+	kill `cat server.pid` 2>/dev/null || true ; \
+	rm -f server.pid ; \
+	if [ $$RESULT -ne 0 ]; then \
+		echo "\033[31m[ERREUR] Les tests d'intégration ont échoué.\033[0m" ; \
+		exit 1 ; \
+	else \
+		echo "\033[32m[OK] Tous les tests d'intégration sont passés avec succès.\033[0m" ; \
+	fi
 
 clean:
 	$(RM) -r $(PATH_OBJS)

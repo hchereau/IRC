@@ -20,14 +20,13 @@ bool CommandValidator::isValidChannelName(const std::string& name) {
 }
 
 bool CommandValidator::isValidNickname(const std::string& nick) {
-    if (nick.empty() || nick.length() > 9) {
+    if (nick.empty() || nick.length() > 9)
+    
+    if (!isalpha(nick[0])) 
         return false;
-    }
-    if (nick[0] == '#' || nick[0] == '&' || nick[0] == ':' || nick[0] == '@') {
-        return false;
-    }
-    for (size_t i = 0; i < nick.length(); ++i) {
-        if (nick[i] == ' ' || nick[i] == '\r' || nick[i] == '\n') {
+
+    for (size_t i = 1; i < nick.length(); ++i) {
+        if (!isalnum(nick[i]) && nick[i] != '_' && nick[i] != '-') {
             return false;
         }
     }

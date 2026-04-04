@@ -104,3 +104,7 @@ std::string Client::extractMessage() {
     }
     return message;
 }
+
+bool Client::isToDisconnect() const {
+    return _toDisconnect;
+}

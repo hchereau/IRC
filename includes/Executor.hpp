@@ -37,4 +37,5 @@ class Executor {
 
         // Seul le dispatcher est public pour être appelé par le Server
         void dispatchMessage(Client* client, const Message& msg);
+        void checkRegistration(Client* client);
 };

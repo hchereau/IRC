@@ -21,6 +21,7 @@ bool CommandValidator::isValidChannelName(const std::string& name) {
 
 bool CommandValidator::isValidNickname(const std::string& nick) {
     if (nick.empty() || nick.length() > 9)
+        return false;
     
     if (!isalpha(nick[0])) 
         return false;

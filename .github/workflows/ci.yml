@@ -21,17 +21,12 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Compile Server
-      run: make
-    
-    - name: Start IRC Server in background
-      run: ./ircserv 6667 testpass &
+      - uses: actions/checkout@v3
       
-    - name: Wait for server to boot
-      run: sleep 1
-    
-    - name: Run Integration Tests
-      run: python3 test/commands_tests/test_handshake.py
+      - name: Build and Run C++ Unit Tests
+        run: |
+          make test
+          ./irc_tests
+          
+      - name: Run Python Integration Tests
+        run: make test_integration

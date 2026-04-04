@@ -23,16 +23,22 @@ bool CommandValidator::isValidNickname(const std::string& nick) {
     if (nick.empty() || nick.length() > 9) {
         return false;
     }
-    if (nick[0] == '#' || nick[0] == '&' || nick[0] == ':' || nick[0] == '@') {
+    
+    if (!isalpha(nick[0])) {
         return false;
     }
-    for (size_t i = 0; i < nick.length(); ++i) {
-        if (nick[i] == ' ' || nick[i] == '\r' || nick[i] == '\n') {
-            return false;
+
+    std::string specialChars = "-[]\\`^{}_|";
+
+    for (size_t i = 1; i < nick.length(); ++i) {
+        char c = nick[i];
+        if (!isalnum(c) && specialChars.find(c) == std::string::npos) {
+            return false; 
         }
     }
     return true;
 }
+
 
 bool CommandValidator::isTrailingParamValid(const std::string& trailing) {
     return (!trailing.empty());

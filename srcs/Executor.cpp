@@ -2,6 +2,7 @@
 #include "CommandValidator.hpp"
 #include "Replies.hpp"
 #include <sstream>
+#include "Server.hpp"
 
 Executor::Executor(Server* server) : _server(server) {
     _commandMap["JOIN"] = &Executor::execJoin;
@@ -50,20 +51,20 @@ void Executor::execNick(Client* client, const Message& msg) {
 
     std::string newNick = msg.params[0];
 
-    // faut vérifier si le mdp est valid ici avec  _server->getPassword()
-
     if (!CommandValidator::isValidNickname(newNick)) {
         Reply::error(client, ERR_ERRONEUSNICKNAME, newNick, "Erroneous nickname");
         return;
     }
 
-    // TODO: Vérifier isNicknameTaken avec le Server
+    Client* existingClient = _server->getClientByNick(newNick);
+    if (existingClient != NULL && existingClient != client) {
+        Reply::error(client, ERR_NICKNAMEINUSE, newNick, "Nickname is already in use");
+        return;
+    }
 
     client->setNickname(newNick);
 
-    if (client->getState() == PASS_ACCEPTED) {
-        client->setState(NICK_SET);
-    }
+    checkRegistration(client);
 }
 
 void Executor::execPass(Client* client, const Message& msg) {
@@ -76,10 +77,8 @@ void Executor::execPass(Client* client, const Message& msg) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "PASS", "Not enough parameters");
         return;
     }
-
-    std::string serverPassword = "test"; // mdp en dur pour le moment. Il faut faire _server->getPassword() (on attends le serveur pour l'instant) 
     
-    if (msg.params[0] != serverPassword) {
+    if (msg.params[0] != _server->getPassword()) {
         Reply::error(client, ERR_PASSWDMISMATCH, "PASS", "Password incorrect");
         client->setToDisconnect(true); 
         return;
@@ -94,20 +93,31 @@ void Executor::execUser(Client* client, const Message& msg) {
         return;
     }
 
-    if (!CommandValidator::hasMinParams(msg.params, 4)) {
+    if (msg.params.size() < 3 || (msg.params.size() == 3 && msg.trailing.empty())) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "USER", "Not enough parameters");
         return;
     }
 
     client->setUsername(msg.params[0]);
-    // C'est commun de ne pas utiliser 1 et 2 dnas les serveurs pro
-    client->setRealname(msg.params[3]);
+    std::string realname = msg.trailing.empty() ? msg.params[3] : msg.trailing;
 
     client->setState(USER_SET);
 
-    if (client->getNickname() != "") {
+    checkRegistration(client);
+}
+
+void Executor::checkRegistration(Client* client) {
+    if (client->getState() == REGISTERED) {
+        return;
+    }
+
+    if (!_server->getPassword().empty() && client->getState() < PASS_ACCEPTED) {
+        return; 
+    }
+
+    // Vérifie si NICK et USER sont remplis
+    if (!client->getNickname().empty() && !client->getUsername().empty()) {
         client->setState(REGISTERED);
-        
-        Reply::welcome(client);
+        Reply::welcome(client); // Envoie le 001 RPL_WELCOME
     }
 }

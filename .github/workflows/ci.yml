@@ -16,3 +16,17 @@ jobs:
 
       - name: Execute Unit Tests
         run: ./irc_tests
+
+  build-and-test:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build and Run C++ Unit Tests
+        run: |
+          make test
+          ./irc_tests
+          
+      - name: Run Python Integration Tests
+        run: make test_integration

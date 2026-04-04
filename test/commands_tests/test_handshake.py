@@ -58,7 +58,7 @@ class TestHandshake(unittest.TestCase):
         sock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock1.connect((SERVER, PORT))
         sock1.sendall(f"PASS {PASSWORD}\r\n".encode())
-        sock1.sendall(b"NICK double_nick\r\n")
+        sock1.sendall(b"NICK double_n\r\n")
         sock1.sendall(b"USER u1 0 * :Real\r\n")
         time.sleep(0.1)
         
@@ -66,7 +66,7 @@ class TestHandshake(unittest.TestCase):
         sock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock2.connect((SERVER, PORT))
         sock2.sendall(f"PASS {PASSWORD}\r\n".encode())
-        sock2.sendall(b"NICK double_nick\r\n")
+        sock2.sendall(b"NICK double_n\r\n")
         
         time.sleep(0.1)
         response = sock2.recv(4096).decode()
@@ -82,7 +82,7 @@ class TestHandshake(unittest.TestCase):
         sock.connect((SERVER, PORT))
         
         sock.sendall(f"PASS {PASSWORD}\r\n".encode())
-        sock.sendall(b"NICK #invalidN!ck\r\n")
+        sock.sendall(b"NICK #invalN!c\r\n")
         
         time.sleep(0.1)
         response = sock.recv(4096).decode()

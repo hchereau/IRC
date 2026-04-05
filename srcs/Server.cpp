@@ -140,7 +140,7 @@ void Server::recvServ(int fd, int *i)
 			size_t pos; // 없으면 std::string::nps
 			while ((pos = client->getReadBuffer().find("\r\n")) != std::string::npos)
 			{
-				if (pos > MAX_ONE_MESSAGE) // > need to check the condition (> 512)
+				if (pos + 2 > MAX_ONE_MESSAGE) // > need to check the condition (> 512)
 				{
 					_todelFds.insert(_polling[*i].fd);
 					break ;

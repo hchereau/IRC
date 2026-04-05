@@ -75,6 +75,7 @@ listing classic references related to the topic (documentation, articles, tutori
 ## 🤖 AI Usage Disclosure
 
 hucherea:
+
 	- Used AI as a complement to official documentation (RFC 2812) to clarify protocol specifics.
 
 	- Applied AI for code review after initial development to ensure "Clean Code" standards and improve logic efficiency.

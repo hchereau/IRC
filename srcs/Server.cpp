@@ -275,6 +275,21 @@ void Server::delInPolling(void)
 	}
 }
 
+bool Server::chanExists(std::string chan)
+{
+	std::map<std::string, Channel*>::iterator it = _channels.begin();
+	while (it != _channels.end())
+	{
+		Channel* channel = it->second;
+		if (channel->getName() == chan)
+		{
+			return true;
+		}
+		++it;
+	}
+	return false;
+}
+
 void Server::delInChannel(void)
 {
 	// debug_delInChannel();

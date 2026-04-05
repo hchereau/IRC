@@ -293,7 +293,7 @@ bool Server::chanExists(std::string chan)
 void Server::delInChannel(void)
 {
 	// debug_delInChannel();
-	// first find and remove the matching clinet(s) using todelFds, on each channels  
+	// first find and remove the matching client(s) using todelFds, on each channels  
 	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
 	while (ch_it != _channels.end())
 	{

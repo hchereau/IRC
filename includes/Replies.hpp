@@ -20,6 +20,7 @@
 #define ERR_NOTEXTTOSEND    412
 #define ERR_CHANNELISFULL   471
 #define ERR_BADCHANNELKEY   475
+#define ERR_CANNOTSENDTOCHAN 404
 
 #define RPL_TOPIC           332
 #define RPL_NAMREPLY        353

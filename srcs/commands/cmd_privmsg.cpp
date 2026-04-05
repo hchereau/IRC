@@ -4,15 +4,12 @@
 #include "Replies.hpp"
 #include "Channel.hpp"
 
-// 1. La fonction principale agit comme un routeur
 void Executor::execPrivmsg(Client* client, const Message& msg) {
-    // 1. Vérifier le destinataire
     if (!CommandValidator::hasMinParams(msg.params, 1)) {
         Reply::error(client, ERR_NORECIPIENT, "PRIVMSG", "No recipient given");
         return;
     }
 
-    // 2. Extraire le texte (soit du trailing, soit du params[1])
     std::string text = "";
     if (!msg.trailing.empty()) {
         text = msg.trailing;
@@ -20,7 +17,6 @@ void Executor::execPrivmsg(Client* client, const Message& msg) {
         text = msg.params[1];
     }
 
-    // 3. Vérifier si on a du texte à envoyer
     if (text.empty()) {
         Reply::error(client, ERR_NOTEXTTOSEND, "", "No text to send");
         return;
@@ -38,7 +34,7 @@ void Executor::execPrivmsg(Client* client, const Message& msg) {
 
 // 2. Logique dédiée aux Canaux
 void Executor::privmsgToChannel(Client* client, const std::string& target, const std::string& text) {
-    Channel* channel = _server->getChannelByName(target); // Suppose que Server::getChannel existe et renvoie NULL si introuvable
+    Channel* channel = _server->getChannelByName(target);
     
     if (!channel) {
         Reply::error(client, ERR_NOSUCHCHANNEL, target, "No such channel");
@@ -57,7 +53,6 @@ void Executor::privmsgToChannel(Client* client, const std::string& target, const
     channel->broadcastMessage(fullMsg, client);
 }
 
-// 3. Logique dédiée aux Utilisateurs
 void Executor::privmsgToUser(Client* client, const std::string& target, const std::string& text) {
     Client* targetClient = _server->getClientByNick(target);
     

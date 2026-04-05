@@ -3,21 +3,8 @@
 #include <map>
 #include <string>
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "Parsing.hpp"
-
-#define ERR_UNKNOWNCOMMAND  421
-#define ERR_NOSUCHNICK      401
-#define ERR_NOSUCHCHANNEL   403
-#define ERR_NONICKNAMEGIVEN 431
-#define ERR_ERRONEUSNICKNAME 432
-#define ERR_NICKNAMEINUSE   433
-#define ERR_NEEDMOREPARAMS  461
-#define ERR_ALREADYREGISTRED 462
-#define ERR_PASSWDMISMATCH  464
-#define ERR_NOSUCHNICK      401
-#define ERR_NOSUCHCHANNEL   403
-#define ERR_NORECIPIENT     411
-#define ERR_NOTEXTTOSEND    412
 
 class Server;
 class Executor;
@@ -30,7 +17,6 @@ class Executor {
         std::map<std::string, CommandFunction> _commandMap;
 
         // Toutes ces fonctions sont internes à l'Executor, donc privées
-        void execJoin(Client* client, const Message& msg);
         void execNick(Client* client, const Message& msg);
         void execUser(Client* client, const Message& msg);
         void execPass(Client* client, const Message& msg);
@@ -38,6 +24,9 @@ class Executor {
         void execPrivmsg(Client* client, const Message& msg);
         std::string extractMessageText(const Message& msg) const;
         void sendPrivateMessage(Client* sender, const std::string& targetNick, const std::string& text);
+
+        void execJoin(Client* client, const Message& msg);
+        void sendNamesReply(Client* client, Channel* channel);
 
     public:
         Executor(Server* server);

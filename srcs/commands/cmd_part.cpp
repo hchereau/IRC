@@ -29,7 +29,7 @@ void Executor::execPart(Client *client, const Message&msg){
             }
             std::string partMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " PART " + chanName + "\r\n";
             channel->broadcastMessage(partMsg, NULL);
-            channel->removeClient(client);
+            channel->removeClient(client); // empty channel management is done in delInChannel in an automatic way
         }
     }
 }

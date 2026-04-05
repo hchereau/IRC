@@ -4,7 +4,7 @@ TEST_NAME   := irc_tests
 ### COMPILATION ################################################################
 
 COMPILATION := c++
-CPPFLAGS    := -Wall -Wextra -Werror -std=c++98 -g3
+CPPFLAGS    := -Wall -Wextra -Werror -std=c++98
 DEPFLAGS    := -MMD -MP 
 INCLUDES    := -I includes -I test
 
@@ -14,12 +14,16 @@ PATH_OBJS   := objs/
 
 SRCS        := srcs/Client.cpp \
                srcs/Channel.cpp \
-			   srcs/CommandValidator.cpp \
-			   srcs/Replies.cpp \
-			   srcs/Executor.cpp \
-			   srcs/Parsing.cpp \
-			   srcs/Server.cpp \
-			   srcs/main.cpp
+               srcs/CommandValidator.cpp \
+               srcs/Replies.cpp \
+               srcs/Executor.cpp \
+               srcs/Parsing.cpp \
+               srcs/Server.cpp \
+               srcs/main.cpp \
+               srcs/commands/cmd_pass.cpp \
+               srcs/commands/cmd_nick.cpp \
+               srcs/commands/cmd_user.cpp \
+               srcs/commands/cmd_privmsg.cpp
 
 TEST_SRCS   := test/method_tests/main_test.cpp \
                test/method_tests/test_client.cpp \

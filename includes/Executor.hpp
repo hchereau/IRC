@@ -14,6 +14,10 @@
 #define ERR_NEEDMOREPARAMS  461
 #define ERR_ALREADYREGISTRED 462
 #define ERR_PASSWDMISMATCH  464
+#define ERR_NOSUCHNICK      401
+#define ERR_NOSUCHCHANNEL   403
+#define ERR_NORECIPIENT     411
+#define ERR_NOTEXTTOSEND    412
 
 class Server;
 class Executor;
@@ -30,6 +34,10 @@ class Executor {
         void execNick(Client* client, const Message& msg);
         void execUser(Client* client, const Message& msg);
         void execPass(Client* client, const Message& msg);
+    
+        void execPrivmsg(Client* client, const Message& msg);
+        std::string extractMessageText(const Message& msg) const;
+        void sendPrivateMessage(Client* sender, const std::string& targetNick, const std::string& text);
 
     public:
         Executor(Server* server);

@@ -9,6 +9,7 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["NICK"] = &Executor::execNick;
     _commandMap["PASS"] = &Executor::execPass;
     _commandMap["USER"] = &Executor::execUser;
+    _commandMap["PRIVMSG"] = &Executor::execPrivmsg;
 }
 
 Executor::~Executor() {}
@@ -43,69 +44,6 @@ void Executor::execJoin(Client* client, const Message& msg) {
     // TODO: Implémenter la suite avec _server->getOrCreateChannel(channelName)
 }
 
-void Executor::execNick(Client* client, const Message& msg) {
-    if (!CommandValidator::hasMinParams(msg.params, 1) || msg.params[0].empty()) {
-        Reply::error(client, ERR_NONICKNAMEGIVEN, "NICK", "No nickname given");
-        return;
-    }
-
-    std::string newNick = msg.params[0];
-
-    if (!CommandValidator::isValidNickname(newNick)) {
-        Reply::error(client, ERR_ERRONEUSNICKNAME, newNick, "Erroneous nickname");
-        return;
-    }
-
-    Client* existingClient = _server->getClientByNick(newNick);
-    if (existingClient != NULL && existingClient != client) {
-        Reply::error(client, ERR_NICKNAMEINUSE, newNick, "Nickname is already in use");
-        return;
-    }
-
-    client->setNickname(newNick);
-
-    checkRegistration(client);
-}
-
-void Executor::execPass(Client* client, const Message& msg) {
-    if (client->getState() == REGISTERED) {
-        Reply::error(client, ERR_ALREADYREGISTRED, "PASS", "Unauthorized command (already registered)");
-        return;
-    }
-
-    if (!CommandValidator::hasMinParams(msg.params, 1) || msg.params[0].empty()) {
-        Reply::error(client, ERR_NEEDMOREPARAMS, "PASS", "Not enough parameters");
-        return;
-    }
-    
-    if (msg.params[0] != _server->getPassword()) {
-        Reply::error(client, ERR_PASSWDMISMATCH, "PASS", "Password incorrect");
-        client->setToDisconnect(true); 
-        return;
-    }
-
-    client->setState(PASS_ACCEPTED);
-}
-
-void Executor::execUser(Client* client, const Message& msg) {
-    if (client->getState() == REGISTERED) {
-        Reply::error(client, ERR_ALREADYREGISTRED, "USER", "Unauthorized command (already registered)");
-        return;
-    }
-
-    if (msg.params.size() < 3 || (msg.params.size() == 3 && msg.trailing.empty())) {
-        Reply::error(client, ERR_NEEDMOREPARAMS, "USER", "Not enough parameters");
-        return;
-    }
-
-    client->setUsername(msg.params[0]);
-    std::string realname = msg.trailing.empty() ? msg.params[3] : msg.trailing;
-
-    client->setState(USER_SET);
-
-    checkRegistration(client);
-}
-
 void Executor::checkRegistration(Client* client) {
     if (client->getState() == REGISTERED) {
         return;
@@ -121,3 +59,5 @@ void Executor::checkRegistration(Client* client) {
         Reply::welcome(client); // Envoie le 001 RPL_WELCOME
     }
 }
+
+

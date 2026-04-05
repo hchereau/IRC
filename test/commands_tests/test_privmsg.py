@@ -4,7 +4,7 @@ import unittest
 
 SERVER = "127.0.0.1"
 PORT = 6667
-PASSWORD = "testpass" # Doit correspondre au mdp de ton serveur
+PASSWORD = "testpass" 
 
 class TestPrivmsg(unittest.TestCase):
 

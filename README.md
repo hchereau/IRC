@@ -4,33 +4,54 @@ _This project has been created as part of the 42 curriculum by yookyeoc, huchere
 
 ## 📖 Description
 
-clearly presents the project, including its goal and a
-brief overview.
+This project consists of creating our own IRC server. The server is developed strictly adhering to the C++ 98 standard. It is capable of handling multiple clients concurrently without blocking, utilizing non-blocking I/O operations and a single `poll()` (or equivalent) call to manage all socket operations.
+
+It implements the core features of an IRC server, allowing users to authenticate, set a nickname and a username, join channels, and send or receive private messages. It also includes channel operator privileges with the commands KICK, INVITE, TOPIC, and MODE.
 
 ---
 
-## 📚 Informations to know
+## 📚 Good to Know
 
-Messages structure : Format :<prefix> <command> <params> \r\n (max 512 octets)
-	up to three main parts: the prefix (OPTIONAL), 
-	the command, and the command parameters (maximum of 15).
-	presence of a prefix indicated with ':' = first char of the message
-	NO gap between the colon and the prefix
-	prefix used by servers to indicate origin of message
-	If prefix missing from the message : receiver  
-	Clients' only valid prefix is nickname
-	Max 512 characters including \r\n 
+* **Message Structure:** Format `<prefix> <command> <params> \r\n` (max 512 bytes).
+* Consists of up to three main parts: the prefix (OPTIONAL), the command, and the parameters (maximum of 15).
+* The presence of a prefix is indicated by a `:` as the first character of the message.
+* There is no space between the colon and the prefix.
+* The prefix is used by servers to indicate the origin of the message.
+* The only valid prefix for clients is their registered nickname.
 
 ---
 
-## 🚀 Instructions for Use
+## 🚀 Usage Instructions
 
-any relevant information about compilation,
-installation, and/or execution
+### Compilation
+The project uses a Makefile for compilation. You can compile the server using standard rules:
+* `make` or `make all`: Compiles the main program.
+* `make clean`: Removes object files.
+* `make fclean`: Removes object files and the executable.
+* `make re`: Fully recompiles the project.
+
+### Execution
+The executable must be launched with the following command:
+`./ircserv <port> <password>`
+
+* **port**: The port number on which the server listens for incoming connections.
+* **password**: The connection password required for any client attempting to connect.
 
 ---
 
 ## 🧪 Testing Tools
+
+We have set up two test suites to ensure our server's stability, which you can run via the Makefile:
+
+1.  **Unit Tests (Methods):**
+    Run the command `make test` to compile and execute our test binary `./irc_tests`. These tests validate the internal behavior of the client, channels, validator, and parser.
+
+2.  **Integration Tests (Commands):**
+    Run the command `make test_integration`. This Makefile rule handles:
+    * Starting the IRC server in the background on port 6667 with a test password.
+    * Executing our custom Python script (`test/commands_tests/run_integration.py`) which simulates client interactions.
+    * Automatically shutting down the server once the tests are completed.
+    * Displaying a success or error message based on the results.
 
 ---
 
@@ -52,5 +73,13 @@ listing classic references related to the topic (documentation, articles, tutori
 ---
 
 ## 🤖 AI Usage Disclosure
+
+hucherea:
+
+	- Used AI as a complement to official documentation (RFC 2812) to clarify protocol specifics.
+
+	- Applied AI for code review after initial development to ensure "Clean Code" standards and improve logic efficiency.
+
+	- Researched optimal C++ 98 patterns for network programming.
 
 ---

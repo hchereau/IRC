@@ -27,7 +27,7 @@ void Executor::execPart(Client *client, const Message&msg){
                 Reply::error(client, ERR_NOTONCHANNEL, chanName, "You're not on that channel");
                 continue;
             }
-            std::string partMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " PART :" + chanName + "\r\n";
+            std::string partMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " PART " + chanName + "\r\n";
             channel->broadcastMessage(partMsg, NULL);
             channel->removeClient(client);
         }

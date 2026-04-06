@@ -21,7 +21,7 @@ class TestPartCommand(unittest.TestCase):
 
     def test_basic_part(self):
         """Test Basique : Rejoindre puis Quitter"""
-        client = self.connect_and_register("TesterPart1")
+        client = self.connect_and_register("TP1")
         
         client.send(b"JOIN #test_part\r\n")
         time.sleep(0.1)
@@ -36,7 +36,7 @@ class TestPartCommand(unittest.TestCase):
 
     def test_part_with_reason(self):
         """Test Tricky : Quitter avec un message (Trailing)"""
-        client = self.connect_and_register("TesterPart2")
+        client = self.connect_and_register("TP2")
         
         client.send(b"JOIN #test_reason\r\n")
         time.sleep(0.1)
@@ -51,7 +51,7 @@ class TestPartCommand(unittest.TestCase):
 
     def test_part_nosuchchannel(self):
         """Test Tricky : Canal inexistant (403)"""
-        client = self.connect_and_register("TesterPart3")
+        client = self.connect_and_register("TP3")
         
         client.send(b"PART #ghostchannel\r\n")
         time.sleep(0.1)
@@ -62,12 +62,12 @@ class TestPartCommand(unittest.TestCase):
 
     def test_part_notonchannel(self):
         """Test Tricky : Pas sur le canal (442)"""
-        client1 = self.connect_and_register("TesterPart4")
+        client1 = self.connect_and_register("TP4")
         client1.send(b"JOIN #mychan\r\n")
         time.sleep(0.1)
         client1.recv(4096)
         
-        client2 = self.connect_and_register("TesterPart5")
+        client2 = self.connect_and_register("TP5")
         client2.send(b"PART #mychan\r\n")
         time.sleep(0.1)
         response = client2.recv(4096).decode()

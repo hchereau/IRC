@@ -24,6 +24,7 @@ SRCS        := srcs/Client.cpp \
                srcs/commands/cmd_nick.cpp \
                srcs/commands/cmd_user.cpp \
                srcs/commands/cmd_join.cpp \
+               srcs/commands/cmd_kick.cpp \
                srcs/commands/cmd_privmsg.cpp
 
 TEST_SRCS   := test/method_tests/main_test.cpp \

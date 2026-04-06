@@ -155,6 +155,8 @@ void Server::recvServ(int fd, int *i)
 				{
 					Message msg = _parser.parseLine(oneLine);
 					_executor.dispatchMessage(client, msg);
+					if (client->isToDisconnect())
+						return;
 				}
 			}
 		}

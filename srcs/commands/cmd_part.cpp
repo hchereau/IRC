@@ -11,6 +11,8 @@ static std::string buildPartMessage(Client* parted, const std::string& chanName,
 
 void Executor::execPart(Client *client, const Message&msg){
 
+    // std::cout << "[DEBUG] execPart called with: " << msg.params[0] << std::endl; //debug
+
     if (!CommandValidator::hasMinParams(msg.params, 1) || msg.params[0].empty()){
         Reply::error(client, ERR_NEEDMOREPARAMS, "PART", "Not enough parameters");
         return;
@@ -25,6 +27,7 @@ void Executor::execPart(Client *client, const Message&msg){
         }
         Channel *channel = _server->getChannelByName(chanName);
         if (channel == NULL){
+            // std::cout << "[DEBUG] no such channel: " << chanName << std::endl; // debug
             Reply::error(client, ERR_NOSUCHCHANNEL, chanName, "No such channel (Channels not implemented yet)");
             continue;
         }

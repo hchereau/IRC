@@ -6,6 +6,7 @@
 
 Executor::Executor(Server* server) : _server(server) {
     _commandMap["JOIN"] = &Executor::execJoin;
+    _commandMap["PART"] = &Executor::execPart;
     _commandMap["NICK"] = &Executor::execNick;
     _commandMap["PASS"] = &Executor::execPass;
     _commandMap["USER"] = &Executor::execUser;

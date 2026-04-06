@@ -100,6 +100,8 @@ class Server {
 	void    addChannel(const std::string& name);
 	void    removeChannel(const std::string& name);
 	Channel* getChannelByName(const std::string& name);
+	bool 	chanExists(const std::string& chan);
+
 
 	// debug
 	// void	debug_delInChannel();

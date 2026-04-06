@@ -26,6 +26,13 @@ Channel* Server::getOrCreateChannel(const std::string& name)
 		return (getChannelByName(name));
 }
 
+bool Server::chanExists(const std::string& chan)
+{
+	std::map<std::string, Channel*>::iterator it = _channels.find(chan);
+	if (it != _channels.end())
+		return true;
+	return false;
+}
 
 Channel* Server::getChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _channels.find(name);
@@ -155,6 +162,8 @@ void Server::recvServ(int fd, int *i)
 				{
 					Message msg = _parser.parseLine(oneLine);
 					_executor.dispatchMessage(client, msg);
+					if (client->isToDisconnect())
+						return;
 				}
 			}
 		}
@@ -278,7 +287,7 @@ void Server::delInPolling(void)
 void Server::delInChannel(void)
 {
 	// debug_delInChannel();
-	// first find and remove the matching clinet(s) using todelFds, on each channels  
+	// first find and remove the matching client(s) using todelFds, on each channels  
 	std::map<std::string, Channel*>::iterator ch_it = _channels.begin();
 	while (ch_it != _channels.end())
 	{

@@ -20,6 +20,7 @@ class Executor {
         void execNick(Client* client, const Message& msg);
         void execUser(Client* client, const Message& msg);
         void execPass(Client* client, const Message& msg);
+        void execPart(Client* client, const Message& msg);
     
         void execPrivmsg(Client* client, const Message& msg);
         std::string extractMessageText(const Message& msg) const;
@@ -40,3 +41,5 @@ class Executor {
         void dispatchMessage(Client* client, const Message& msg);
         void checkRegistration(Client* client);
 };
+
+std::vector<std::string> split(const std::string& str, char delimiter);

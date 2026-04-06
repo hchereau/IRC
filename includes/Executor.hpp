@@ -31,6 +31,8 @@ class Executor {
         void execJoin(Client* client, const Message& msg);
         void sendNamesReply(Client* client, Channel* channel);
 
+        void execInvite(Client* client, const Message& msg);
+
         void execKick(Client* client, const Message& msg);
 
     public:

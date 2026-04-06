@@ -12,6 +12,7 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["USER"] = &Executor::execUser;
     _commandMap["PRIVMSG"] = &Executor::execPrivmsg;
     _commandMap["KICK"] = &Executor::execKick;
+    _commandMap["INVITE"] = &Executor::execInvite;
 }
 
 Executor::~Executor() {}
@@ -45,5 +46,7 @@ void Executor::checkRegistration(Client* client) {
         Reply::welcome(client); // Envoie le 001 RPL_WELCOME
     }
 }
+
+
 
 

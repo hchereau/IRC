@@ -30,6 +30,8 @@ class Executor {
         void execJoin(Client* client, const Message& msg);
         void sendNamesReply(Client* client, Channel* channel);
 
+        void execKick(Client* client, const Message& msg);
+
     public:
         Executor(Server* server);
         ~Executor();

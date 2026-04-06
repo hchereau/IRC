@@ -26,6 +26,13 @@ Channel* Server::getOrCreateChannel(const std::string& name)
 		return (getChannelByName(name));
 }
 
+bool Server::chanExists(const std::string& chan)
+{
+	std::map<std::string, Channel*>::iterator it = _channels.find(chan);
+	if (it != _channels.end())
+		return true;
+	return false;
+}
 
 Channel* Server::getChannelByName(const std::string& name) {
     std::map<std::string, Channel*>::iterator it = _channels.find(name);
@@ -275,21 +282,6 @@ void Server::delInPolling(void)
 		else
 			++it;
 	}
-}
-
-bool Server::chanExists(std::string chan)
-{
-	std::map<std::string, Channel*>::iterator it = _channels.begin();
-	while (it != _channels.end())
-	{
-		Channel* channel = it->second;
-		if (channel->getName() == chan)
-		{
-			return true;
-		}
-		++it;
-	}
-	return false;
 }
 
 void Server::delInChannel(void)

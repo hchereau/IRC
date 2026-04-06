@@ -11,6 +11,7 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["PASS"] = &Executor::execPass;
     _commandMap["USER"] = &Executor::execUser;
     _commandMap["PRIVMSG"] = &Executor::execPrivmsg;
+    _commandMap["KICK"] = &Executor::execKick;
 }
 
 Executor::~Executor() {}

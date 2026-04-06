@@ -1,1 +1,7 @@
 *.o
+__pycache__/
+*.pyc
+# action needed for the past history
+#git rm -r --cached .
+#git add .
+#git commit -m "apply gitignore"

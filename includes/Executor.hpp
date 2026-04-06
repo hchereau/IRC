@@ -25,9 +25,13 @@ class Executor {
         void execPrivmsg(Client* client, const Message& msg);
         std::string extractMessageText(const Message& msg) const;
         void sendPrivateMessage(Client* sender, const std::string& targetNick, const std::string& text);
+        void privmsgToChannel(Client* client, const std::string& target, const std::string& text);
+        void privmsgToUser(Client* client, const std::string& target, const std::string& text);
 
         void execJoin(Client* client, const Message& msg);
         void sendNamesReply(Client* client, Channel* channel);
+
+        void execKick(Client* client, const Message& msg);
 
     public:
         Executor(Server* server);

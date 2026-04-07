@@ -20,3 +20,11 @@ void Reply::welcome(Client* client) {
 void Reply::raw(Client* client, const std::string& rawMsg) {
     client->appendToWriteBuffer(rawMsg + "\r\n");
 }
+
+void Reply::custom(Client* client, int code, const std::string& msg) {
+    std::stringstream ss;
+    std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
+    
+    ss << ":ft_irc " << code << " " << nick << " " << msg << "\r\n";
+    client->appendToWriteBuffer(ss.str());
+}

@@ -92,3 +92,15 @@ void Channel::broadcastMessage(const std::string& message, Client* sender) {
 bool Channel::isEmpty() const {
     return _members.empty();
 }
+
+void Channel::addInvite(Client* client) {
+    _invitedUsers.insert(client);
+}
+
+void Channel::removeInvite(Client* client) {
+    _invitedUsers.erase(client);
+}
+
+bool Channel::isInvited(Client* client) const {
+    return _invitedUsers.find(client) != _invitedUsers.end();
+}

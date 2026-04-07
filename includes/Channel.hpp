@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "Client.hpp" 
+#include <set>
 
 class Channel {
 	public:
@@ -52,6 +53,11 @@ class Channel {
 		unsigned int getLimit() const;
 		void setLimit(unsigned int limit); // 0 means no limite
 
+		//Invitations
+		void addInvite(Client* client);
+   		void removeInvite(Client* client);
+   		bool isInvited(Client* client) const;
+
 		void broadcastMessage(const std::string& message, Client* sender);
 
 	private:
@@ -63,8 +69,9 @@ class Channel {
 		std::vector<Client*> _members;
 		std::vector<Client*> _operators;
 
-		bool 			_inviteOnly;      // +i
-		bool 			_topicRestricted; // +t
-		std::string 	_key;             // +k
-		unsigned int 	_limit;           // +l
+		bool 				_inviteOnly;      // +i
+		bool 				_topicRestricted; // +t
+		std::string 		_key;             // +k
+		unsigned int 		_limit;           // +l
+		std::set<Client*> 	_invitedUsers;
 };

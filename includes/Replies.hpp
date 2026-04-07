@@ -25,7 +25,9 @@
 #define ERR_USERNOTINCHANNEL 441
 #define ERR_NOTONCHANNEL     442
 #define ERR_CHANOPRIVSNEEDED 482
+#define ERR_USERONCHANNEL   443
 
+#define RPL_INVITING        341
 #define RPL_TOPIC           332
 #define RPL_NAMREPLY        353
 #define RPL_ENDOFNAMES      366
@@ -35,6 +37,8 @@
 // --- CLASSE UTILITAIRE ---
 class Reply {
     public:
+        static void custom(Client* client, int code, const std::string& msg);
+
         // Envoie une erreur formatée
         static void error(Client* client, int code, const std::string& command, const std::string& msg);
         

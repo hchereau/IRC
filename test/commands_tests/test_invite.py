@@ -112,3 +112,45 @@ class TestInviteCommand(unittest.TestCase):
         
         clientA.close()
         clientB.close()
+    
+    def test_invite_err_chanoprivsneeded(self):
+        """Vérifie l'erreur 482 si un non-opérateur tente d'inviter sur un canal +i"""
+        alice = self.connect_client("Alice")
+        bob = self.connect_client("Bob")
+        charlie = self.connect_client("Charlie")
+
+        # 1. Alice crée le canal et Bob le rejoint (avant qu'il soit protégé par +i)
+        alice.send(b"JOIN #bunker\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+
+        bob.send(b"JOIN #bunker\r\n")
+        time.sleep(0.1)
+        bob.recv(4096)
+        alice.recv(4096)
+
+        # 2. Alice active le mode +i
+        alice.send(b"MODE #bunker +i\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        bob.recv(4096) # Bob reçoit le broadcast du mode
+
+        # 3. Bob tente d'inviter Charlie (Doit échouer car Bob n'est pas OP)
+        bob.send(b"INVITE Charlie #bunker\r\n")
+        time.sleep(0.1)
+        resp_bob = bob.recv(4096).decode("utf-8")
+        self.assertIn("482", resp_bob, "Bob n'est pas OP, il ne doit pas pouvoir inviter sur un canal +i")
+
+        # 4. Alice tente d'inviter Charlie (Doit réussir car Alice est OP)
+        alice.send(b"INVITE Charlie #bunker\r\n")
+        time.sleep(0.1)
+        resp_alice = alice.recv(4096).decode("utf-8")
+        self.assertIn("341", resp_alice, "Alice est OP, elle doit recevoir RPL_INVITING (341)")
+        
+        # Charlie doit recevoir le message d'invitation
+        resp_charlie = charlie.recv(4096).decode("utf-8")
+        self.assertIn("INVITE", resp_charlie, "Charlie doit recevoir la notification d'invitation")
+
+        alice.close()
+        bob.close()
+        charlie.close()

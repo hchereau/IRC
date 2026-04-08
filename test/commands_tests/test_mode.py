@@ -86,7 +86,7 @@ class TestModeCommand(unittest.TestCase):
             self._send_msg(self.alice, "MODE #modetest -i")
             resp = self._recv_msg(self.alice)
             self.assertIn("MODE #modetest -i", resp, "Le serveur doit confirmer le retrait du mode -i")
-            
+             
     def test_mode_add_key(self):
         """Vérifie l'ajout d'une clé/mot de passe au canal (+k)"""
         self._send_msg(self.alice, "MODE #modetest +k secretpass")

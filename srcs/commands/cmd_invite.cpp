@@ -36,11 +36,12 @@ void Executor::execInvite(Client* client, const Message& msg) {
         return;
     }
 
-    // TODO: À décommenter lors de l'implémentation de la commande MODE
-    // if (channel->isInviteOnly() && !channel->isOperator(client)) {
-    //     Reply::error(client, ERR_CHANOPRIVSNEEDED, channelName, "You're not channel operator");
-    //     return;
-    // }
+    if (channel->isInviteOnly()) {
+        if (!channel->isOperator(client)) {
+            Reply::error(client, ERR_CHANOPRIVSNEEDED, channel->getName(), "You're not channel operator");
+            return;
+        }
+    }
 
     channel->addInvite(targetClient);
 

@@ -46,8 +46,14 @@ void Executor::execJoin(Client* client, const Message& msg) {
             Reply::error(client, ERR_CHANNELISFULL, chanName, "Cannot join channel (+l)");
             continue;
         }
-        
-        // Mode +i (invite-only) -> à implémenter plus tard quand on fera le mode i / INVITE
+
+        if (channel->isInviteOnly()) {
+            if (!channel->isInvited(client)) {
+                Reply::error(client, ERR_INVITEONLYCHAN, chanName, "Cannot join channel (+i)");
+                continue;
+            }
+            channel->removeInvite(client);
+        }
 
         channel->addClient(client);
 

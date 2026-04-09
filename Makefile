@@ -28,7 +28,7 @@ SRCS        := srcs/Client.cpp \
                srcs/commands/cmd_kick.cpp \
                srcs/commands/cmd_invite.cpp \
                srcs/commands/cmd_mode.cpp \
-               srcs/commands/cmd_privmsg.cpp
+               srcs/commands/cmd_privmsg.cpp \
 
 TEST_SRCS   := test/method_tests/main_test.cpp \
                test/method_tests/test_client.cpp \
@@ -37,6 +37,11 @@ TEST_SRCS   := test/method_tests/main_test.cpp \
 			   test/method_tests/test_validator.cpp \
 			   test/method_tests/test_Dispatcher.cpp \
 			   test/method_tests/test_parsing.cpp
+
+NAME_BOT := irc_bot
+BOT_SRCS    := srcs/bonus/bot.cpp \
+               srcs/bonus/main_bot.cpp
+BOT_OBJS    := $(patsubst %.cpp, $(PATH_OBJS)%.o, $(BOT_SRCS))
 
 ### OBJECTS & DEPS #############################################################
 
@@ -56,6 +61,10 @@ $(PATH_OBJS)%.o: %.cpp
 
 $(NAME): $(OBJS)
 	$(COMPILATION) $(CPPFLAGS) $(OBJS) -o $(NAME) $(INCLUDES)
+
+bot: $(BOT_OBJS)
+	$(COMPILATION) $(CPPFLAGS) $(BOT_OBJS) -o $(NAME_BOT) $(INCLUDES)
+	@echo "\n\033[32m[OK] Binaire du bot prêt : ./$(NAME_BOT)\033[0m\n"
 
 test: $(TEST_OBJS) $(TEST_SRV_OBJS)
 	$(COMPILATION) $(CPPFLAGS) $^ -o $(TEST_NAME) $(INCLUDES)
@@ -82,7 +91,8 @@ clean:
 	$(RM) -r $(PATH_OBJS)
 
 fclean: clean
-	$(RM) $(NAME) $(TEST_NAME)
+	$(RM) $(NAME) $(TEST_NAME) $(NAME_BOT)
+	@echo "\033[33m[ Nettoyage complet effectué ]\033[0m"
 
 re: fclean all
 

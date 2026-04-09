@@ -76,6 +76,28 @@ class TestPartCommand(unittest.TestCase):
         
         client1.close()
         client2.close()
+    
+    def test_part_empty_channel_destruction(self):
+        """Vérifie que lorsqu'un canal se vide suite à un PART, il est bien détruit par le serveur"""
+        alice = self.connect_and_register("Alice")
+        alice.sendall(b"JOIN #zombie\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        
+        alice.sendall(b"PART #zombie\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        
+        bob = self.connect_and_register("Bob")
+        bob.sendall(b"JOIN #zombie\r\n")
+        time.sleep(0.1)
+        
+        response = bob.recv(4096).decode("utf-8")
+        
+        alice.close()
+        bob.close()
+        
+        self.assertIn("@Bob", response, "Le canal vide n'a pas été détruit ! Bob a rejoint un canal zombie au lieu d'en recréer un.")
 
 if __name__ == '__main__':
     unittest.main()

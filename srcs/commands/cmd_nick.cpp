@@ -22,6 +22,7 @@ void Executor::execNick(Client* client, const Message& msg) {
         Reply::error(client, ERR_NICKNAMEINUSE, newNick, "Nickname is already in use");
         return;
     }
+    
 
     client->setNickname(newNick);
 

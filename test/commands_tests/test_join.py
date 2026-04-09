@@ -205,3 +205,20 @@ class TestJoinCommand(unittest.TestCase):
 
         alice.close()
         bob.close()
+    
+    def test_join_not_registered(self):
+        """Vérifie l'erreur 451 ERR_NOTREGISTERED si le client n'est pas identifié"""
+        # 1. Nouvelle connexion vierge (sans utiliser connect_client pour éviter le PASS/NICK/USER)
+        ghost_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ghost_client.connect((SERVER, PORT))
+        
+        # 2. On tente un JOIN direct sans PASS, NICK ni USER
+        ghost_client.sendall(b"JOIN #interdit\r\n")
+        time.sleep(0.1)
+        
+        # 3. On lit la réponse et on ferme
+        response = ghost_client.recv(4096).decode("utf-8")
+        ghost_client.close()
+        
+        # 4. Vérification
+        self.assertIn("451", response, "Le serveur doit renvoyer l'erreur 451 ERR_NOTREGISTERED")

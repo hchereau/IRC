@@ -15,8 +15,14 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
 }
 
 void Executor::execJoin(Client* client, const Message& msg) {
+
     if (!CommandValidator::hasMinParams(msg.params, 1)) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "JOIN", "Not enough parameters");
+        return;
+    }
+
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "JOIN", "You have not registered");
         return;
     }
 

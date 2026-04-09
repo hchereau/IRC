@@ -88,6 +88,31 @@ test_integration: all
 		echo "\033[32m[OK] Tous les tests d'intégration sont passés avec succès.\033[0m" ; \
 	fi
 
+test_valgrind: CPPFLAGS += -g3
+test_valgrind: all
+	@echo "\033[36m--- Libération du port 6667 ---\033[0m"
+	@-fuser -k 6667/tcp 2>/dev/null || true
+	@echo "\033[36m--- Démarrage du serveur IRC sous VALGRIND en arrière-plan ---\033[0m"
+	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --log-file=valgrind.log ./$(NAME) 6667 testpass & echo $$! > server.pid
+	@echo "\033[33m[Attente de 2s] Valgrind ralentit l'exécution...\033[0m"
+	@sleep 2
+	@echo "\033[36m--- Exécution des tests Python (Custom Runner) ---\033[0m\n"
+	@python3 test/commands_tests/run_integration.py ; \
+	RESULT=$$?; \
+	echo "\n\033[36m--- Arrêt du serveur IRC et génération du rapport ---\033[0m" ; \
+	kill -SIGTERM `cat server.pid` 2>/dev/null || true ; \
+	rm -f server.pid ; \
+	sleep 1 ; \
+	echo "\n\033[35m=== RESUME VALGRIND ===\033[0m" ; \
+	cat valgrind.log | grep -E "definitely lost|indirectly lost|possibly lost|ERROR SUMMARY" ; \
+	echo "\033[35m=======================\033[0m\n" ; \
+	if [ $$RESULT -ne 0 ]; then \
+		echo "\033[31m[ERREUR] Les tests d'intégration ont échoué.\033[0m" ; \
+		exit 1 ; \
+	else \
+		echo "\033[32m[OK] Tous les tests d'intégration sont passés. Vérifiez les leaks ci-dessus !\033[0m" ; \
+	fi
+
 clean:
 	$(RM) -r $(PATH_OBJS)
 

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Build and Run C++ Unit Tests
         run: |
@@ -30,3 +30,18 @@ jobs:
           
       - name: Run Python Integration Tests
         run: make test_integration
+  
+  valgrind-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y valgrind psmisc # psmisc installe fuser pour le Makefile
+
+      - name: Run Valgrind Integration Tests
+        run: make test_valgrind

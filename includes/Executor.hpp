@@ -44,6 +44,10 @@ class Executor {
         bool applyModeL(Channel* channel, bool isAdding, const std::string& param);
         bool applyModeO(Channel* channel, bool isAdding, const std::string& paramNick, Client* sender);
 
+        void execPing(Client* client, const Message& msg);
+
+        void execCap(Client* client, const Message& msg);
+
     public:
         Executor(Server* server);
         ~Executor();

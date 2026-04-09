@@ -14,6 +14,8 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["KICK"] = &Executor::execKick;
     _commandMap["INVITE"] = &Executor::execInvite;
     _commandMap["MODE"] = &Executor::execMode;
+    _commandMap["PING"] = &Executor::execPing;
+    _commandMap["CAP"] = &Executor::execCap;
 }
 
 Executor::~Executor() {}
@@ -48,6 +50,12 @@ void Executor::checkRegistration(Client* client) {
     }
 }
 
+//irssi
+void Executor::execCap(Client* client, const Message& msg) {
+    if (!msg.params.empty() && msg.params[0] == "LS") {
+        client->appendToWriteBuffer("CAP * LS :\r\n");
+    }
+}
 
 
 

@@ -87,6 +87,20 @@ A2-2. I also like that we set up the server fd on the poll list[0] position, and
 * (in case of further server part details, I fully commented my part and pushed on our team git)
 ---
 
+## 🤖 Bonus: Kuru_bot
+
+As a bonus feature, we've implemented a dedicated IRC Bot that can interact with users on the server.
+
+### Features
+* **Missile Launcher:** Use `!missile` in any channel where the bot is present to trigger a random missile launch (Nuclear, Foam, Ballistic, etc.).
+* **Independent Client:** The bot runs as a separate process, demonstrating the server's ability to handle automated TCP clients.
+
+### How to use
+1. **Compile the bot:**
+   ```bash
+   make bot
+   ./irc_bot <server_ip> <port> <password>
+
 ## 📚 Resources and References
 
 listing classic references related to the topic (documentation, articles, tutorials etc.), as well as a description of how AI was used specifying for which tasks and which parts of the project.

@@ -102,6 +102,7 @@ class Server {
 	Channel* getChannelByName(const std::string& name);
 	bool 	chanExists(const std::string& chan);
 
+	void broadcastToSharedChannels(Client* sender, const std::string& message);
 
 	// debug
 	// void	debug_delInChannel();

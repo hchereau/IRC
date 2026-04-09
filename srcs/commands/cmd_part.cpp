@@ -45,8 +45,8 @@ void Executor::execPart(Client *client, const Message&msg){
         }
         channel->broadcastMessage(partMsg, NULL);
         channel->removeClient(client);
-        // if (channel->isEmpty()) {
-        //     _server->removeChannel(chanName); // empty channel management is done in delInChannel in an automatic way too
-        // }
+        if (channel->isEmpty()) {
+            _server->removeChannel(chanName);
+        }
     }
 }

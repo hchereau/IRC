@@ -10,6 +10,12 @@ void Executor::execNick(Client* client, const Message& msg) {
         return;
     }
 
+    if (!_server->getPassword().empty() && client->getState() < PASS_ACCEPTED) {
+        Reply::error(client, ERR_PASSWDMISMATCH, "USER", "Password required");
+        client->setToDisconnect(true);
+        return;
+    }
+
     std::string newNick = msg.params[0];
 
     if (!CommandValidator::isValidNickname(newNick)) {
@@ -26,6 +32,8 @@ void Executor::execNick(Client* client, const Message& msg) {
     std::string oldNick = client->getNickname();
     std::string oldPrefix = oldNick.empty() ? "" : (oldNick + "!" + client->getUsername() + "@" + client->getHostname());
     client->setNickname(newNick);
+    // client->appendToWriteBuffer(nickNotification);
+    // _server->broadcastToSharedChannels(client, nickNotification);
     if (client->getState() == REGISTERED && !oldPrefix.empty()) {
         std::string nickMsg = ":" + oldPrefix + " NICK :" + newNick + "\r\n";
         client->appendToWriteBuffer(nickMsg);  

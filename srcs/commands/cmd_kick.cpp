@@ -61,6 +61,10 @@ void Executor::execKick(Client* client, const Message& msg) {
 
     Client* target = getValidTarget(_server, client, channel, targetNick);
     if (!target) return; 
+    if (!channel->isOperator(client)) {
+        Reply::error(client, ERR_CHANOPRIVSNEEDED, channelName, "You're not channel operator");
+        return;
+    }
 
     std::string kickMsg = buildKickMessage(client, channelName, targetNick, reason);
     channel->broadcastMessage(kickMsg, NULL); 

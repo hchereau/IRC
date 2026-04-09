@@ -13,6 +13,7 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["PRIVMSG"] = &Executor::execPrivmsg;
     _commandMap["KICK"] = &Executor::execKick;
     _commandMap["INVITE"] = &Executor::execInvite;
+    _commandMap["MODE"] = &Executor::execMode;
 }
 
 Executor::~Executor() {}

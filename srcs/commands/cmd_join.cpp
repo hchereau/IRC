@@ -38,18 +38,22 @@ void Executor::execJoin(Client* client, const Message& msg) {
         Channel* channel = _server->getOrCreateChannel(chanName);
 
         if (channel->hasKey() && channel->getKey() != key) {
-            // TODO: Ajouter ERR_BADCHANNELKEY (475) dans Replies
             Reply::error(client, ERR_BADCHANNELKEY, chanName, "Cannot join channel (+k)");
             continue;
         }
 
         if (channel->hasLimit() && channel->getMembers().size() >= channel->getLimit()) {
-            // TODO: Ajouter ERR_CHANNELISFULL (471) dans Replies
             Reply::error(client, ERR_CHANNELISFULL, chanName, "Cannot join channel (+l)");
             continue;
         }
-        
-        // Mode +i (invite-only) -> à implémenter plus tard quand on fera le mode i / INVITE
+
+        if (channel->isInviteOnly()) {
+            if (!channel->isInvited(client)) {
+                Reply::error(client, ERR_INVITEONLYCHAN, chanName, "Cannot join channel (+i)");
+                continue;
+            }
+            channel->removeInvite(client);
+        }
 
         channel->addClient(client);
 

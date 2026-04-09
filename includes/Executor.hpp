@@ -35,6 +35,15 @@ class Executor {
 
         void execKick(Client* client, const Message& msg);
 
+        void execMode(Client* client, const Message& msg);
+        void processModeString(Client* client, Channel* channel, const std::string& modeString, const std::vector<std::string>& params);
+        Client* getClientFromChannel(Channel* channel, const std::string& nick) const;
+        bool applyModeI(Channel* channel, bool isAdding);
+        bool applyModeT(Channel* channel, bool isAdding);
+        bool applyModeK(Channel* channel, bool isAdding, const std::string& param);
+        bool applyModeL(Channel* channel, bool isAdding, const std::string& param);
+        bool applyModeO(Channel* channel, bool isAdding, const std::string& paramNick, Client* sender);
+
     public:
         Executor(Server* server);
         ~Executor();

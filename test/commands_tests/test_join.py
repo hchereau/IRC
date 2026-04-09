@@ -101,3 +101,107 @@ class TestJoinCommand(unittest.TestCase):
         self.assertIn("JOIN :#kchan1", resp)
         self.assertIn("JOIN :#kchan2", resp)
         client.close()
+
+    def test_join_err_badchannelkey(self):
+        """Vérifie l'erreur 475 si le mot de passe du canal (+k) est manquant ou incorrect"""
+        alice = self.connect_client("Alice")
+        bob = self.connect_client("Bob")
+
+        # Alice crée le canal et met un mot de passe
+        alice.send(b"JOIN #vault\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        
+        alice.send(b"MODE #vault +k secret\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+
+        # Bob tente de rejoindre sans mot de passe
+        bob.send(b"JOIN #vault\r\n")
+        time.sleep(0.1)
+        resp1 = bob.recv(4096).decode("utf-8")
+        self.assertIn("475", resp1, "Doit renvoyer ERR_BADCHANNELKEY (sans clé)")
+
+        # Bob tente avec le mauvais mot de passe
+        bob.send(b"JOIN #vault wrongpass\r\n")
+        time.sleep(0.1)
+        resp2 = bob.recv(4096).decode("utf-8")
+        self.assertIn("475", resp2, "Doit renvoyer ERR_BADCHANNELKEY (mauvaise clé)")
+
+        # Bob tente avec le bon mot de passe
+        bob.send(b"JOIN #vault secret\r\n")
+        time.sleep(0.1)
+        resp3 = bob.recv(4096).decode("utf-8")
+        self.assertIn("JOIN", resp3, "Bob doit pouvoir rejoindre avec la bonne clé")
+
+        alice.close()
+        bob.close()
+
+    def test_join_err_channelisfull(self):
+        """Vérifie l'erreur 471 si la limite d'utilisateurs (+l) est atteinte"""
+        alice = self.connect_client("Alice")
+        bob = self.connect_client("Bob")
+
+        # Alice crée le canal et met une limite de 1 personne
+        alice.send(b"JOIN #vip\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        
+        alice.send(b"MODE #vip +l 1\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+
+        # Bob tente de rejoindre alors que la limite de 1 (Alice) est atteinte
+        bob.send(b"JOIN #vip\r\n")
+        time.sleep(0.1)
+        resp = bob.recv(4096).decode("utf-8")
+        self.assertIn("471", resp, "Doit renvoyer ERR_CHANNELISFULL")
+
+        alice.close()
+        bob.close()
+
+    def test_join_err_inviteonlychan(self):
+        """Vérifie l'erreur 473 si le canal est sur invitation (+i) et le succès si invité"""
+        alice = self.connect_client("Alice")
+        bob = self.connect_client("Bob")
+
+        # Alice crée le canal et le met en invite-only
+        alice.send(b"JOIN #secret\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        
+        alice.send(b"MODE #secret +i\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+
+        # 1. Bob tente de rejoindre sans invitation
+        bob.send(b"JOIN #secret\r\n")
+        time.sleep(0.1)
+        resp = bob.recv(4096).decode("utf-8")
+        self.assertIn("473", resp, "Doit renvoyer ERR_INVITEONLYCHAN")
+
+        # 2. Alice invite Bob
+        alice.send(b"INVITE Bob #secret\r\n")
+        time.sleep(0.1)
+        alice.recv(4096)
+        bob.recv(4096) # Bob reçoit la notif d'invitation
+
+        # 3. Bob tente de rejoindre à nouveau (Doit réussir car invité)
+        bob.send(b"JOIN #secret\r\n")
+        time.sleep(0.1)
+        resp_success = bob.recv(4096).decode("utf-8")
+        self.assertIn("JOIN", resp_success, "Bob doit pouvoir rejoindre après invitation")
+
+        # 4. TRICKY: L'invitation est consommée. Si Bob part et revient, il doit être bloqué.
+        bob.send(b"PART #secret\r\n")
+        time.sleep(0.1)
+        bob.recv(4096)
+        alice.recv(4096) # Alice voit Bob partir
+        
+        bob.send(b"JOIN #secret\r\n")
+        time.sleep(0.1)
+        resp_rejoin = bob.recv(4096).decode("utf-8")
+        self.assertIn("473", resp_rejoin, "L'invitation doit être consommée après usage")
+
+        alice.close()
+        bob.close()

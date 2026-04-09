@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Build and Run C++ Unit Tests
         run: |
@@ -30,3 +30,12 @@ jobs:
           
       - name: Run Python Integration Tests
         run: make test_integration
+  
+  valgrind-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Valgrind Unit Tests
+        run: make test_valgrind

@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include "Replies.hpp"
 #include <stdexcept>
+#include <set>
 
 volatile std::sig_atomic_t sigFlag = 0;
 
@@ -555,4 +556,24 @@ void Server::setPolling(void)
 				it->events |= POLLOUT;
 		}
 	}
+}
+
+void Server::broadcastToSharedChannels(Client* sender, const std::string& message) {
+    std::set<Client*> notified;
+    notified.insert(sender);
+
+    std::map<std::string, Channel*>::iterator it = _channels.begin();
+    for (; it != _channels.end(); ++it) {
+        Channel* channel = it->second;
+        
+        if (channel->isMember(sender)) {
+            const std::vector<Client*>& members = channel->getMembers();
+            for (size_t i = 0; i < members.size(); ++i) {
+                if (notified.find(members[i]) == notified.end()) {
+                    members[i]->appendToWriteBuffer(message);
+                    notified.insert(members[i]);
+                }
+            }
+        }
+    }
 }

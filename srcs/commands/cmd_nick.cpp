@@ -23,8 +23,14 @@ void Executor::execNick(Client* client, const Message& msg) {
         return;
     }
     
-
+    std::string oldNick = client->getNickname();
+    std::string oldPrefix = oldNick.empty() ? "" : (oldNick + "!" + client->getUsername() + "@" + client->getHostname());
     client->setNickname(newNick);
+    if (client->getState() == REGISTERED && !oldPrefix.empty()) {
+        std::string nickMsg = ":" + oldPrefix + " NICK :" + newNick + "\r\n";
+        client->appendToWriteBuffer(nickMsg);  
+        _server->broadcastToSharedChannels(client, nickMsg);
+    }
 
     checkRegistration(client);
 }

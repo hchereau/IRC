@@ -78,36 +78,41 @@ class TestNickCommand(unittest.TestCase):
         self.assertTrue(response.startswith(":OldNick"), "La notification ne commence pas par l'ancien préfixe")
 
     def test_nick_broadcast_shared_channel(self):
-        """TRICKY: Vérifie que si Alice change de nom, Bob (sur le même canal) est prévenu"""
+        """Vérifie que le changement de pseudo est diffusé via les buffers du serveur"""
+        
+        # 1. Connexion de deux clients avec le helper
         alice = self.connect_and_register("Alice")
         bob = self.connect_and_register("Bob")
         
-        # 1. Ils se rejoignent sur #general
+        # 2. Ils se rejoignent sur #general
         alice.sendall(b"JOIN #general\r\n")
         bob.sendall(b"JOIN #general\r\n")
         time.sleep(0.1)
         
-        # On vide les buffers (messages de JOIN, listes des membres)
+        # On vide les buffers pour ignorer les messages de JOIN et NAMREPLY
         alice.recv(4096)
         bob.recv(4096)
         
-        # 2. Alice change de pseudo (ATTENTION : Max 9 caractères selon la RFC)
+        # 3. Alice change de pseudo
         alice.sendall(b"NICK Alix\r\n")
         time.sleep(0.1)
         
-        # 3. Sécurité anti-freeze : on donne 2 secondes max à Bob pour recevoir la réponse
-        bob.settimeout(2.0)
-        try:
-            bob_response = bob.recv(4096).decode("utf-8")
-        except socket.timeout:
-            self.fail("Bob n'a rien reçu ! Le broadcast a échoué (ou le changement de Nick a été refusé).")
+        # 4. Réception des réponses depuis les writeBuffers du serveur
+        alice_resp = alice.recv(4096).decode("utf-8")
+        bob_resp = bob.recv(4096).decode("utf-8")
         
         alice.close()
         bob.close()
         
-        # Bob DOIT avoir reçu le message de changement de pseudo
-        self.assertIn(":Alice", bob_response, "Bob n'a pas vu l'ancien pseudo d'Alice")
-        self.assertIn("NICK :Alix", bob_response, "Bob n'a pas été notifié du changement (Broadcast défaillant)")
-		
+        # 5. Vérifications
+        expected_msg = "NICK :Alix"
+        
+        # Alice doit recevoir la confirmation de son changement
+        self.assertIn(expected_msg, alice_resp, "Alice n'a pas reçu la confirmation dans son buffer")
+        
+        # Bob doit avoir reçu le broadcast grâce à broadcastToSharedChannels
+        self.assertIn(expected_msg, bob_resp, "Bob n'a pas reçu le broadcast du changement de pseudo")
+        self.assertIn(":Alice!", bob_resp, "Le broadcast vers Bob ne contient pas l'ancien préfixe complet d'Alice")
+
 if __name__ == '__main__':
     unittest.main()

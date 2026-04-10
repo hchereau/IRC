@@ -221,4 +221,4 @@ class TestJoinCommand(unittest.TestCase):
         ghost_client.close()
         
         # 4. Vérification
-        self.assertIn("451", response, "Le serveur doit renvoyer l'erreur 451 ERR_NOTREGISTERED")
+        self.assertIn("451", response, "Le serveur doit renvoyer l'erreur 451 ERR_NOTREGISTERED") 

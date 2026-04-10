@@ -10,7 +10,10 @@ PASSWORD = "testpass"
 class TestRobustnessAndSecurity(unittest.TestCase):
     
     def connect_client(self, nick_base):
-        nick = f"{nick_base}_{random.randint(1000, 9999)}"
+        # On garantit un pseudo de 8 caractères max (RFC 2812 = 9 caractères max)
+        short_base = nick_base[:4]
+        nick = f"{short_base}{random.randint(1000, 9999)}"
+        
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(3.0) # TIMEOUT GLOBAL
         s.connect((SERVER, PORT))
@@ -22,6 +25,11 @@ class TestRobustnessAndSecurity(unittest.TestCase):
                 chunk = s.recv(4096).decode("utf-8")
                 if not chunk: break
                 buffer += chunk
+                
+                # Si le serveur rejette le pseudo, on coupe court pour éviter le timeout
+                if "432" in buffer:
+                    self.fail(f"Pseudo invalide rejeté par le serveur (432) : {nick}")
+                    
         except socket.timeout:
             self.fail(f"Timeout lors de l'enregistrement de {nick}")
             
@@ -30,11 +38,10 @@ class TestRobustnessAndSecurity(unittest.TestCase):
     def test_network_fragmentation(self):
         """Vérifie que le serveur gère bien une commande envoyée morceau par morceau"""
         client, _ = self.connect_client("Frag")
-        # On utilise un nom de canal unique
-        chan_name = f"#frag_{random.randint(1000, 9999)}"
+        chan_name = f"#frg{random.randint(1000, 9999)}"
         
         cmd = f"JOIN {chan_name}\r\n".encode('utf-8')
-        command_parts = [bytes([b]) for b in cmd] # On fragmente octet par octet
+        command_parts = [bytes([b]) for b in cmd]
         
         for part in command_parts:
             client.send(part)
@@ -55,7 +62,7 @@ class TestRobustnessAndSecurity(unittest.TestCase):
 
     def test_flood_protection(self):
         """Vérifie que le serveur déconnecte un client qui flood sans \\r\\n"""
-        client, _ = self.connect_client("Flood")
+        client, _ = self.connect_client("Flod")
         massive_string = b"A" * 4500
         client.send(massive_string)
         time.sleep(0.5)
@@ -71,12 +78,11 @@ class TestRobustnessAndSecurity(unittest.TestCase):
 
     def test_operator_privilege_kick(self):
         """Vérifie qu'un utilisateur normal ne peut pas kicker l'opérateur"""
-        op_client, op_nick = self.connect_client("ChanOp")
+        op_client, op_nick = self.connect_client("ChOp")
         normal_client, normal_nick = self.connect_client("Pleb")
-        # NOM DE CANAL UNIQUE pour éviter les conflits avec test_mode.py ou test_join.py
-        chan_name = f"#dictature_{random.randint(1000, 9999)}"
+        chan_name = f"#dic{random.randint(1000, 9999)}"
 
-        # 1. ChanOp rejoint (Créateur = Opérateur)
+        # 1. ChOp rejoint
         op_client.send(f"JOIN {chan_name}\r\n".encode("utf-8"))
         buffer = ""
         try:
@@ -85,9 +91,9 @@ class TestRobustnessAndSecurity(unittest.TestCase):
                 if not chunk: break
                 buffer += chunk
         except socket.timeout:
-            self.fail("Timeout : ChanOp n'a pas reçu la confirmation (366) de son JOIN")
+            self.fail("Timeout : ChOp n'a pas reçu la confirmation (366) de son JOIN")
 
-        # 2. Pleb rejoint (Utilisateur normal)
+        # 2. Pleb rejoint
         normal_client.send(f"JOIN {chan_name}\r\n".encode("utf-8"))
         buffer = ""
         try:
@@ -98,7 +104,7 @@ class TestRobustnessAndSecurity(unittest.TestCase):
         except socket.timeout:
             self.fail("Timeout : Pleb n'a pas reçu la confirmation (366) de son JOIN")
 
-        # 3. Pleb tente de kicker ChanOp
+        # 3. Pleb tente le kick
         kick_cmd = f"KICK {chan_name} {op_nick} :Je prends le pouvoir\r\n"
         normal_client.send(kick_cmd.encode("utf-8"))
         

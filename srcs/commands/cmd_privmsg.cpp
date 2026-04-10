@@ -5,6 +5,12 @@
 #include "Channel.hpp"
 
 void Executor::execPrivmsg(Client* client, const Message& msg) {
+
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "PRIVMSG", "You have not registered");
+        return;
+    }
+
     if (!CommandValidator::hasMinParams(msg.params, 1)) {
         Reply::error(client, ERR_NORECIPIENT, "PRIVMSG", "No recipient given");
         return;
@@ -54,6 +60,7 @@ void Executor::privmsgToChannel(Client* client, const std::string& target, const
 }
 
 void Executor::privmsgToUser(Client* client, const std::string& target, const std::string& text) {
+    
     Client* targetClient = _server->getClientByNick(target);
     
     if (!targetClient) {
@@ -62,7 +69,7 @@ void Executor::privmsgToUser(Client* client, const std::string& target, const st
     }
 
     std::string prefix = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname();
-    std::string fullMsg = prefix + " PRIVMSG " + target + " :" + text + "\r\n";
+    std::string fullMsg = prefix + " PRIVMSG " + target + " :" + text;
     
     Reply::raw(targetClient, fullMsg);
 }

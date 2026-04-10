@@ -7,6 +7,12 @@
 #include <sstream>
 
 void Executor::execMode(Client* client, const Message& msg) {
+
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "MODE", "You have not registered");
+        return;
+    }
+
     if (msg.params.empty()) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "MODE", "Not enough parameters");
         return;

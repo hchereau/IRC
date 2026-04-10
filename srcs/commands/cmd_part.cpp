@@ -13,6 +13,11 @@ void Executor::execPart(Client *client, const Message&msg){
 
     // std::cout << "[DEBUG] execPart called with: " << msg.params[0] << std::endl; //debug
 
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "PART", "You have not registered");
+        return;
+    }
+
     if (!CommandValidator::hasMinParams(msg.params, 1) || msg.params[0].empty()){
         Reply::error(client, ERR_NEEDMOREPARAMS, "PART", "Not enough parameters");
         return;

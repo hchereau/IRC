@@ -48,6 +48,12 @@ static std::string buildKickMessage(Client* kicker, const std::string& channelNa
 }
 
 void Executor::execKick(Client* client, const Message& msg) {
+    
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "KICK", "You have not registered");
+        return;
+    }
+
     if (!validateKickParams(client, msg)) return;
 
     std::string channelName = msg.params[0];

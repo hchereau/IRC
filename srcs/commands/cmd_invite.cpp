@@ -5,6 +5,12 @@
 #include "Channel.hpp"
 
 void Executor::execInvite(Client* client, const Message& msg) {
+
+    if (client->getState() != REGISTERED) {
+        Reply::error(client, ERR_NOTREGISTERED, "INVITE", "You have not registered");
+        return;
+    }
+
     if (!CommandValidator::hasMinParams(msg.params, 2)) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "INVITE", "Not enough parameters");
         return;

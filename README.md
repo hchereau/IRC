@@ -24,6 +24,10 @@ It implements the core features of an IRC server, allowing users to authenticate
 * Set sig -> configurating Server(socket() bind() listen()) -> loop while no signal flag
 * doing : 1. set poll events flags for all clients fds 2. poll() 3. check revents and do the right actions(recv(), send(), upd to delete set) 4. disconnect according to the to delete container
 
+* **Useful debug TIP:** Do you know you can get a log if IRSSI?
+*  /RAWLOG OPEN /tmp/recv.log(name and repo of your choice btw) on your irssi session
+* and then just cat it on your terminal, good surprise is waiting for you!
+
 ---
 
 ## 🚀 Usage Instructions
@@ -100,6 +104,22 @@ As a bonus feature, we've implemented a dedicated IRC Bot that can interact with
    ```bash
    make bot
    ./irc_bot <server_ip> <port> <password>
+
+## 🍀 Bonus: File transfer
+
+As a lucky bonus feature, as our parsing works in a perfect way treating the trailing(without split or any modification) and then forwards the message to the target client, it works automatically as the result.
+
+### What is it?
+* **DCC:** Is Direct Client-to-Client Protocol. You can send files, for example, without routing the data through the IRC server.<br>
+### How does it work?
+**to send:** /dcc send yookyeoc_  '/home/yookyeoc/Desktop/IRC/irc'<br>
+**to get:** /dcc get<br>
+
+This works because to IRC server the DCC arrives as privmsg format, and the server only treats it as the 'server' who passes the message to the other client.<br>
+When a user initiates a file transfer typing /dcc send <nick> 'file', the IRC client sends a message as : PRIVMSG <nick> :\x01DCC SEND ...<br>
+It means when the trailing is parsed as it should be then the work is almost done!<br>
+We must not develop and IRC client, only understand the protocol and how it's implemented and used with the already developped client and for the result make IRC server properly following the protocols!<br>
+* **TIP:** Drag and drop the file you want to send on the IRSSI session, it will give you directly the name and its directory.
 
 ## 📚 Resources and References
 

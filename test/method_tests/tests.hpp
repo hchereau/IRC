@@ -8,3 +8,4 @@ void    printTestResult(const std::string& testName, bool condition);
 void    runValidationTest();
 void 	testDispatcherOnly();
 void    runParsingTests();
+void	test_out_of_memory();

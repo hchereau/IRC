@@ -9,6 +9,7 @@ int main() {
     runClientTests();
     runChannelTests();
     runValidationTest();
+    test_out_of_memory();
     testDispatcherOnly();
     runParsingTests();
 

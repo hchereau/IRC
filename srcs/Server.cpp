@@ -10,7 +10,6 @@ volatile std::sig_atomic_t sigFlag = 0;
 Server::Server(int port, std::string password) 
 	: _port(port), _password(password), _fdSocket(-1), _executor(this)
 {
-
 }
 
 Server::~Server()

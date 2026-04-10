@@ -45,6 +45,7 @@ class Executor {
         bool applyModeO(Channel* channel, bool isAdding, const std::string& paramNick, Client* sender);
 
         void execPing(Client* client, const Message& msg);
+		void execTopic(Client* client, const Message& msg);
 
         void execCap(Client* client, const Message& msg);
 

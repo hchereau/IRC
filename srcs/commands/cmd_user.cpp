@@ -9,6 +9,12 @@ void Executor::execUser(Client* client, const Message& msg) {
         return;
     }
 
+    if (!_server->getPassword().empty() && client->getState() < PASS_ACCEPTED) {
+        Reply::error(client, ERR_PASSWDMISMATCH, "USER", "Password required");
+        client->setToDisconnect(true);
+        return;
+    }
+
     if (msg.params.size() < 3 || (msg.params.size() == 3 && msg.trailing.empty())) {
         Reply::error(client, ERR_NEEDMOREPARAMS, "USER", "Not enough parameters");
         return;

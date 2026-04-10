@@ -73,6 +73,8 @@ test: $(TEST_OBJS) $(TEST_SRV_OBJS)
 	@echo "\n\033[32m[OK] Binaire de test prêt : ./$(TEST_NAME)\033[0m\n"
 
 test_integration: all
+	@echo "\033[36m--- Libération du port 6667 ---\033[0m"
+	@-fuser -k 6667/tcp 2>/dev/null || true
 	@echo "\033[36m--- Démarrage du serveur IRC en arrière-plan ---\033[0m"
 	@./$(NAME) 6667 testpass & echo $$! > server.pid
 	@sleep 1

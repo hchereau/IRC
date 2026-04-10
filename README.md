@@ -106,9 +106,13 @@ As a bonus feature, we've implemented a dedicated IRC Bot that can interact with
 listing classic references related to the topic (documentation, articles, tutorials etc.), as well as a description of how AI was used specifying for which tasks and which parts of the project.
 
 <keait-he's ressources:<br>
-	- https://www.rfc-editor.org/rfc/rfc2812#section-2.3 To know about Messages' structures<br>
-	- https://cplusplus.com/reference For functions' usage<br>
-	- 
+	- https://www.irc.info/articles/rfc-1459 
+	- https://www.polom.fr/doc/irc/ Basic understanding of the project
+	- https://www.rfc-editor.org/rfc/rfc2812#section-2.3 To know about Messages' structures
+	- https://cplusplus.com/reference For functions' usage
+	- https://mathieu-lemoine.developpez.com/tutoriels/irc/protocole/?page=connexion For general understanding of commands
+	- https://man.openbsd.org/gethostname.3 gethostname() fct + 256 standard buffer size
+
 
 <yookyeoc's ressources:<br>
     - https://www.linuxhowtos.org/C_C++/socket.htm sockets tutorial which helps understanding socket() bind() listen() accept() steps<br>
@@ -142,4 +146,13 @@ yookyeoc:
     
     - Verifying to AI if the terms that I'm using for comments are properly understood and not wrong so to not spread wrongly understood infos to teammates.
 
+keait-he:
+
+	- In accordance with 42 project directives, AI was used to assist in:
+
+		-> Clarifying some RFC concepts.
+
+		-> Reviewing code  structure and optimization suggestions.
+		
+		-> Refining technical documentation.
 ---

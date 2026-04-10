@@ -29,6 +29,7 @@ SRCS        := srcs/Client.cpp \
                srcs/commands/cmd_invite.cpp \
                srcs/commands/cmd_mode.cpp \
 			   srcs/commands/cmd_ping.cpp \
+			   srcs/commands/cmd_topic.cpp \
                srcs/commands/cmd_privmsg.cpp
 
 TEST_SRCS   := test/method_tests/main_test.cpp \

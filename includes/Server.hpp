@@ -102,7 +102,6 @@ class Server {
 	Channel* getChannelByName(const std::string& name);
 	bool 	chanExists(const std::string& chan);
 
-
 	// debug
 	// void	debug_delInChannel();
 	// void Server::debug_runServer(int flag);

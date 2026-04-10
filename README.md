@@ -112,6 +112,9 @@ listing classic references related to the topic (documentation, articles, tutori
 	- https://cplusplus.com/reference For functions' usage
 	- https://mathieu-lemoine.developpez.com/tutoriels/irc/protocole/?page=connexion For general understanding of commands
 	- https://man.openbsd.org/gethostname.3 gethostname() fct + 256 standard buffer size
+	- https://dd.ircdocs.horse/refs/commands/topic topic usage
+	- http://www.iprelax.fr/irc/irc_rfcfr6.php error messages numeric answer
+
 
 
 <yookyeoc's ressources:<br>

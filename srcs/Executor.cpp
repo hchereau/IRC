@@ -15,6 +15,7 @@ Executor::Executor(Server* server) : _server(server) {
     _commandMap["INVITE"] = &Executor::execInvite;
     _commandMap["MODE"] = &Executor::execMode;
     _commandMap["PING"] = &Executor::execPing;
+	_commandMap["TOPIC"] = &Executor::execTopic;
     _commandMap["CAP"] = &Executor::execCap;
 }
 

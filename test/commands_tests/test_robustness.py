@@ -1,6 +1,7 @@
 import socket
 import time
 import unittest
+import random
 
 SERVER = "127.0.0.1"
 PORT = 6667
@@ -8,12 +9,23 @@ PASSWORD = "testpass"
 
 class TestRobustnessAndSecurity(unittest.TestCase):
     
-    def connect_client(self, nick):
+    def connect_client(self, nick_base):
+        # Ajout d'un suffixe aléatoire pour éviter les collisions (ERR_NICKNAMEINUSE - 433) entre les tests
+        nick = f"{nick_base}_{random.randint(1000, 9999)}"
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((SERVER, PORT))
         s.send(f"PASS {PASSWORD}\r\nNICK {nick}\r\nUSER {nick} 0 * :Test User\r\n".encode("utf-8"))
-        time.sleep(0.1)
-        s.recv(4096) # Vider le buffer
+        
+        # Sous Valgrind, on s'assure d'attendre la validation de l'enregistrement (001 RPL_WELCOME)
+        s.settimeout(2.0)
+        buffer = ""
+        try:
+            while "001" not in buffer and "433" not in buffer:
+                buffer += s.recv(4096).decode("utf-8")
+        except socket.timeout:
+            pass # Si le serveur est trop lent, on sort de la boucle et on laisse le test faire de son mieux
+            
+        s.settimeout(None) # Remettre le socket en mode bloquant classique
         return s
 
     def test_network_fragmentation(self):

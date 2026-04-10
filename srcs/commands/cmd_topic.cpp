@@ -6,13 +6,18 @@
 
 void	Executor::execTopic(Client* client, const Message& msg)
 {
-	if (msg.params.empty())
+	if (msg.params.empty() && msg.trailing.empty())
 	{
 		Reply::error(client, ERR_NEEDMOREPARAMS, "TOPIC", "Not enough parameters");
 		return;
 	}
-	std::string	channelName = msg.params[0];
-	Channel*	channel = _server->getChannelByName(channelName); // ?
+	std::string	channelName;
+	 if (!msg.params.empty())
+		channelName = msg.params[0];
+	else if (!msg.trailing.empty())
+		channelName = msg.trailing;
+
+	Channel*	channel = _server->getChannelByName(channelName);
 	// verifier si channel existe
 	if (!channel)
 	{

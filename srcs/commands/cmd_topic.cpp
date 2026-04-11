@@ -6,19 +6,15 @@
 
 void	Executor::execTopic(Client* client, const Message& msg)
 {
-	if (msg.params.empty() && msg.trailing.empty())
+	if (msg.params.empty())
 	{
 		Reply::error(client, ERR_NEEDMOREPARAMS, "TOPIC", "Not enough parameters");
 		return;
 	}
-	std::string	channelName;
-	 if (!msg.params.empty())
-		channelName = msg.params[0];
-	else if (!msg.trailing.empty())
-		channelName = msg.trailing;
 
-	Channel*	channel = _server->getChannelByName(channelName);
-	// verifier si channel existe
+	std::string	channelName = msg.params[0];
+	Channel* channel = _server->getChannelByName(channelName);
+
 	if (!channel)
 	{
 		Reply::error(client, ERR_NOSUCHCHANNEL, "TOPIC", channelName);
@@ -29,8 +25,8 @@ void	Executor::execTopic(Client* client, const Message& msg)
 		Reply::error(client, ERR_NOTONCHANNEL, "TOPIC", channelName);
 		return;
 	}
-	// afficher channel
-	if (msg.trailing.empty())
+
+	if (msg.params.size() == 1 && msg.trailing.empty())
 	{
 		std::string	topic = channel->getTopic();
 		if (topic.empty())
@@ -39,17 +35,22 @@ void	Executor::execTopic(Client* client, const Message& msg)
 			Reply::custom(client, RPL_TOPIC, client->getNickname() + " " + channelName + " :" + topic);
 		return ;
 	}
-	// verifier permissions
+
 	if (channel->isTopicRestricted() && !channel->isOperator(client))
 	{
 		Reply::error(client, ERR_CHANOPRIVSNEEDED, "TOPIC", channelName);
 		return;
 	}
-	// modifier
-	std::string newTopic = msg.trailing;
+
+	std::string newTopic;
+	if (msg.params.size() > 1)
+		newTopic = msg.params[1];
+	else
+		newTopic = msg.trailing;
+
 	channel->setTopic(newTopic);
-	// notifier
+
 	std::string prefix = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname();
 	std::string broadcast = prefix + " TOPIC " + channelName + " :" + newTopic + "\r\n";
-	channel->broadcastMessage(broadcast, client);
+	channel->broadcastMessage(broadcast, NULL); 
 }

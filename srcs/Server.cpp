@@ -4,6 +4,7 @@
 #include "Replies.hpp"
 #include <stdexcept>
 #include <set>
+#include <new>
 
 volatile std::sig_atomic_t sigFlag = 0;
 
@@ -44,7 +45,12 @@ Channel* Server::getChannelByName(const std::string& name) {
 
 void Server::addChannel(const std::string& name) {
     if (_channels.find(name) == _channels.end()) {
-        _channels[name] = new Channel(name);
+        Channel* newChannel = new (std::nothrow) Channel(name);
+		if (!newChannel) {
+            std::cerr << "Erreur : Mémoire insuffisante pour créer le canal " << name << std::endl;
+            return ;
+        }
+        _channels[name] = newChannel;
     }
 }
 
@@ -81,7 +87,13 @@ void Server::acceptNewClient(void)
 	add_to_polling.events = POLLIN;
 	add_to_polling.revents = 0;
 	std::string clientHostname(inet_ntoa(clientAddr.sin_addr));
-	Client* client = new Client(temp_clientFd, clientHostname); // leak management needed
+	Client* client = new (std::nothrow) Client(temp_clientFd, clientHostname); // leak management needed
+	if (!client)
+	{
+	    std::cerr << "Erreur : Mémoire insuffisante pour accepter un nouveau client." << std::endl;
+	    close(temp_clientFd);
+	    return ;
+	}
 	_clients.insert(std::make_pair(temp_clientFd, client));
 	_polling.push_back(add_to_polling);
 }

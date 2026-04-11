@@ -39,11 +39,16 @@ bool IrcBot::connectToServer(const std::string& ip, int port) {
     return true;
 }
 
+extern bool g_botRunning;
+
 void IrcBot::run() {
     char buffer[1024];
-    while (true) {
+    while (g_botRunning) {
         int bytesReceived = recv(_botSocket, buffer, sizeof(buffer) - 1, 0);
-        if (bytesReceived <= 0) break; 
+        
+        if (bytesReceived <= 0) {
+            break; 
+        }
 
         buffer[bytesReceived] = '\0';
         std::string message(buffer);

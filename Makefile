@@ -1,4 +1,4 @@
-NAME        := irc
+NAME        := ircserv
 TEST_NAME   := irc_tests
 
 ### COMPILATION ################################################################
